@@ -46,6 +46,10 @@ class ReleaseBundleTests(unittest.TestCase):
   result=subprocess.run([sys.executable,str(ROOT/'scripts'/'build_release_bundle.py'),'--project',str(self.project),'--sources-file',str(self.sources),'--claims-file',str(self.claims),'--output',str(self.project)],capture_output=True,text=True)
   self.assertEqual(result.returncode,2)
   self.assertIn('must not overwrite',result.stderr)
+  default_claims=ROOT/'data'/'sources'/'claims.json'
+  second=subprocess.run([sys.executable,str(ROOT/'scripts'/'build_release_bundle.py'),'--project',str(self.project),'--sources-file',str(self.sources),'--output',str(default_claims)],capture_output=True,text=True)
+  self.assertEqual(second.returncode,2)
+  self.assertIn('must not overwrite',second.stderr)
  def test_invalid_project_or_ledgers_fail_closed(self):
   self.project.write_text('{}',encoding='utf-8')
   with self.assertRaises(ReleaseBundleError): build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
