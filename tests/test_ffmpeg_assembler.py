@@ -38,6 +38,28 @@ class FfmpegAssemblerTests(unittest.TestCase):
         run.return_value=Mock(returncode=1,stderr='fixture failure')
         with self.assertRaisesRegex(VideoAssemblyError,'fixture failure'):
             assemble_video(self.video,self.audio,self.output)
+    @patch('app.video.ffmpeg_assembler.shutil.which',return_value='/usr/bin/ffmpeg')
+    @patch('app.video.ffmpeg_assembler.subprocess.run')
+    def test_failed_overwrite_preserves_existing_output(self,run,which):
+        self.output.write_bytes(b'original-output')
+        run.return_value=Mock(returncode=1,stderr='fixture failure')
+        with self.assertRaisesRegex(VideoAssemblyError,'fixture failure'):
+            assemble_video(self.video,self.audio,self.output,overwrite=True)
+        self.assertEqual(self.output.read_bytes(),b'original-output')
+        self.assertEqual(list(self.root.glob('.out.*.mp4')),[])
+    @patch('app.video.ffmpeg_assembler.shutil.which',return_value='/usr/bin/ffmpeg')
+    @patch('app.video.ffmpeg_assembler.subprocess.run')
+    def test_timeout_preserves_existing_output_and_cleans_temp(self,run,which):
+        from subprocess import TimeoutExpired
+        self.output.write_bytes(b'original-output')
+        run.side_effect=TimeoutExpired(cmd='ffmpeg',timeout=1)
+        with self.assertRaisesRegex(VideoAssemblyError,'timed out'):
+            assemble_video(self.video,self.audio,self.output,overwrite=True,timeout_seconds=1)
+        self.assertEqual(self.output.read_bytes(),b'original-output')
+        self.assertEqual(list(self.root.glob('.out.*.mp4')),[])
+    def test_requires_mp4_output_extension(self):
+        with self.assertRaisesRegex(VideoAssemblyError,r'\.mp4 extension'):
+            assemble_video(self.video,self.audio,self.root/'out.mkv')
     def test_output_must_differ_from_input(self):
         with self.assertRaisesRegex(VideoAssemblyError,'differ'):
             assemble_video(self.video,self.audio,self.video)
