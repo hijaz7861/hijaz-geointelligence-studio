@@ -43,7 +43,7 @@ class ReleaseBundleTests(unittest.TestCase):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,metadata_path=self.metadata)
   self.assertTrue(any('Metadata draft must be a JSON object' in item for item in bundle['release_blockers']))
  def test_invalid_utf8_metadata_is_a_blocker_not_a_crash(self):
-  self.metadata.write_bytes(b'\\xff\\xfe{broken')
+  self.metadata.write_bytes(b'\xff\xfe{broken')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,metadata_path=self.metadata)
   self.assertTrue(any('Metadata draft is unreadable JSON/UTF-8' in item for item in bundle['release_blockers']))
  def test_cli_refuses_output_path_that_matches_input(self):
