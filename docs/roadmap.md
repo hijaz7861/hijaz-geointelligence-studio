@@ -28,7 +28,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Block media with unknown or restricted rights at the release checklist stage.
 - [ ] Build original graphics, timelines, maps, captions, and narration tracks.
 - [ ] Add an optional local FFmpeg assembly adapter with dependency detection and a small test fixture.
-- [ ] Verify subtitle timing, audio duration, output resolution, and render errors.
+- [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
+- [ ] Verify subtitle-to-audio synchronization, audio duration, output resolution, and render errors.
 
 ## Phase 4 — Release safety and YouTube preparation
 - [x] Add human-approval flags for script, translation, media rights, and final video review.
