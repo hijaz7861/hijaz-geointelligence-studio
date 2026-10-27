@@ -144,7 +144,8 @@ grep -q '"publish_ready": false' "$TMP_DIR/e2e-validation.json"
 "$PYTHON" scripts/build_release_metadata.py --project "$TMP_DIR/e2e-project.json" --sources-file "$TMP_DIR/sources.json" --claims-file "$TMP_DIR/claims.json" --output "$TMP_DIR/e2e-metadata.json" > "$TMP_DIR/e2e-metadata.out"
 grep -q 'https://example.org/validation-fixture' "$TMP_DIR/e2e-metadata.json"
 grep -q '"publish_ready": false' "$TMP_DIR/e2e-metadata.json"
-printf 'PASS: source -> claim -> cited draft -> project validator -> blocked metadata package\n'
+grep -q 'single_independent_domain' "$TMP_DIR/e2e-metadata.json"
+printf 'PASS: source -> claim -> cited draft -> corroboration warning -> blocked metadata package\n'
 
 if command -v espeak-ng >/dev/null 2>&1 || command -v espeak >/dev/null 2>&1; then
   printf '\n[12/13] Optional offline narration smoke test\n'
