@@ -55,3 +55,7 @@ No GitHub Actions workflow is enabled; this validation script runs locally and d
 ## Claim traceability
 
 See [`docs/claim-ledger.md`](docs/claim-ledger.md) for adding claims linked to recorded sources. The ledger is a workflow safeguard, not an automated fact-checker.
+
+## Project completion plan
+
+See [`docs/roadmap.md`](docs/roadmap.md) for the phased roadmap and explicit completion criteria. This project is not yet production-complete; code and test coverage will be expanded phase by phase.
