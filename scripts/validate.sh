@@ -134,7 +134,7 @@ project = {
         "approved_by": ""
     }
 }
-project_path.write_text(json.dumps(project, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+project_path.write_text(json.dumps(project, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 "$PYTHON" scripts/validate_project.py --project "$TMP_DIR/e2e-project.json" --sources-file "$TMP_DIR/sources.json" --claims-file "$TMP_DIR/claims.json" > "$TMP_DIR/e2e-validation.json"
 grep -q '"structural_validation": "PASS"' "$TMP_DIR/e2e-validation.json"
