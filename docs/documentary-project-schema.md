@@ -16,7 +16,7 @@ Paragraphs beginning with `[EDITORIAL]` or `[TRANSITION]` may be used for clearl
 
 ## Media rights
 
-Each asset records `asset_id`, `origin_url`, `rights_status`, and `notes`. Allowed statuses are `licensed`, `permission_granted`, `public_domain_verified`, `original`, `unknown`, and `restricted`. `unknown` and `restricted` are release blockers. Store actual license/permission evidence and attribution in notes or linked records; a status label alone is not proof of permission.
+Each asset records `asset_id`, `origin_url`, `rights_status`, `creator`, `attribution`, `usage_scope`, `rights_evidence`, and `notes`. The validator rejects missing metadata fields so that a rights status cannot stand alone without a documented creator, attribution plan, intended use, and evidence note. Allowed statuses are `licensed`, `permission_granted`, `public_domain_verified`, `original`, `unknown`, and `restricted`. `unknown` and `restricted` are release blockers. Store actual license/permission evidence and attribution in notes or linked records; a status label alone is not proof of permission.
 
 ## Release gate
 
