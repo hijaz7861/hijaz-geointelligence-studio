@@ -9,7 +9,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Reject claim references to URLs absent from the source ledger.
 - [x] Warn when consequential claims lack independent reporting or rely on only one independent domain; warnings never automatically determine truth.
 - [x] Run repeatable local unit, syntax, CLI, and smoke checks without GitHub Actions.
-- [ ] Add a reviewed-source discovery/import adapter with timeouts, URL allow/deny safeguards, and explicit provenance.
+- [x] Add an opt-in RSS/Atom metadata importer with HTTPS-only feeds, same-host redirects, timeouts, response-size caps, private-IP checks, duplicate handling, and provenance notes.
+- [ ] Add feed ranking/filtering, publisher terms review, and source-diversity selection before automatic intake.
 - [ ] Add independent-source corroboration checks as warnings, not automatic truth judgments.
 
 ## Phase 2 — Cited editorial package (in progress)
