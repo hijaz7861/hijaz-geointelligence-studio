@@ -10,6 +10,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Track editorial claims and reject references to URLs absent from the source ledger.
 - Validate documentary project structure and trace project claims and media-origin URLs.
 - Require every factual script paragraph to use a tracked `[[claim:Exact claim text]]` marker; clearly label non-factual framing as `[EDITORIAL]` or `[TRANSITION]`.
+- Generate a traceable Markdown draft from recorded claims and source URLs; drafts are explicitly marked for human review.
 - Require media creator, attribution, usage scope, and rights-evidence notes.
 - Validate SRT subtitle sequence, timestamps, cue overlap, text presence, and line length with a local CLI.
 - Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
@@ -54,6 +55,7 @@ The sample package is intentionally not approved for publishing. The validator c
 ## Documentation
 - [Claim ledger workflow](docs/claim-ledger.md)
 - [Documentary project schema and release gate](docs/documentary-project-schema.md)
+- [Cited draft generation](docs/cited-draft-generation.md)
 - [Local FFmpeg video assembly](docs/video-assembly.md)
 - [Editorial policy](docs/editorial-policy.md)
 - [Implementation roadmap and completion criteria](docs/roadmap.md)
