@@ -7,6 +7,7 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Reject duplicate source URLs.
 - [x] Track editorial claims with an allowed status label.
 - [x] Reject claim references to URLs absent from the source ledger.
+- [x] Warn when consequential claims lack independent reporting or rely on only one independent domain; warnings never automatically determine truth.
 - [x] Run repeatable local unit, syntax, CLI, and smoke checks without GitHub Actions.
 - [ ] Add a reviewed-source discovery/import adapter with timeouts, URL allow/deny safeguards, and explicit provenance.
 - [ ] Add independent-source corroboration checks as warnings, not automatic truth judgments.
