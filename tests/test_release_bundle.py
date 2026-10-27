@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -30,6 +32,19 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertTrue(any('rendered video is missing' in item.lower() for item in bundle['release_blockers']))
   self.assertTrue(any('subtitle file is missing' in item.lower() for item in bundle['release_blockers']))
   self.assertTrue(any('metadata draft is missing' in item.lower() for item in bundle['release_blockers']))
+ def test_placeholder_license_evidence_is_a_blocker(self):
+  project={**PROJECT,"media_assets":[{**PROJECT["media_assets"][0],"rights_status":"licensed","rights_evidence":"Synthetic fixture evidence, not a real license"}]}
+  self.project.write_text(json.dumps(project),encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  self.assertTrue(any('placeholder or requires manual verification' in item for item in bundle['release_blockers']))
+ def test_non_object_metadata_is_a_blocker_not_a_crash(self):
+  self.metadata.write_text('[]',encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,metadata_path=self.metadata)
+  self.assertTrue(any('Metadata draft must be a JSON object' in item for item in bundle['release_blockers']))
+ def test_cli_refuses_output_path_that_matches_input(self):
+  result=subprocess.run([sys.executable,str(ROOT/'scripts'/'build_release_bundle.py'),'--project',str(self.project),'--sources-file',str(self.sources),'--claims-file',str(self.claims),'--output',str(self.project)],capture_output=True,text=True)
+  self.assertEqual(result.returncode,2)
+  self.assertIn('must not overwrite',result.stderr)
  def test_invalid_project_or_ledgers_fail_closed(self):
   self.project.write_text('{}',encoding='utf-8')
   with self.assertRaises(ReleaseBundleError): build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
