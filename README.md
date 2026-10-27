@@ -8,15 +8,17 @@ Build a source-grounded workflow for researching public geopolitical events and 
 ## Current capabilities
 - Validate public-source metadata, publication dates, source categories, and duplicate URLs.
 - Track editorial claims and reject references to URLs absent from the source ledger.
-- Validate a documentary project package and ensure its claims and media-origin URLs are traceable.
-- Produce a release-blocker checklist for unverified claims, uncleared media rights, and missing human approvals.
+- Validate documentary project structure and trace project claims and media-origin URLs.
+- Require every factual script paragraph to use a tracked `[[claim:Exact claim text]]` marker; clearly label non-factual framing as `[EDITORIAL]` or `[TRANSITION]`.
+- Require media creator, attribution, usage scope, and rights-evidence notes.
+- Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
 - Run repeatable local validation without consuming GitHub Actions minutes.
 
 ## Editorial and safety rules
 - Use public, non-operational information; do not generate real-time targeting or attack-optimization guidance.
 - Distinguish verified facts, official claims, independent reporting, analysis, and unverified information.
 - Respect copyright and document media permission/licensing evidence.
-- Never present an allegation as established fact; a metadata validator does not prove truth.
+- Never present an allegation as established fact; metadata validation does not prove truth.
 - Require human review before public release. The project validator does not publish videos.
 
 ## Project layout
