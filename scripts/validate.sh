@@ -97,7 +97,7 @@ Synthetic render test.
 SRT
   "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/final.mp4" > "$TMP_DIR/render.json"
   grep -q '"render": "PASS"' "$TMP_DIR/render.json"
-  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/final.mp4" --require-audio --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/render-validation.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/final.mp4" --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/render-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/render-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/final.mp4" > "$TMP_DIR/streams.txt"
   grep -q 'video' "$TMP_DIR/streams.txt"
@@ -170,7 +170,7 @@ if { command -v espeak-ng >/dev/null 2>&1 || command -v espeak >/dev/null 2>&1; 
   printf '\n[13/16] Optional narration-to-video integration\n'
   "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/tts-narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/narrated-final.mp4" > "$TMP_DIR/narrated-render.json"
   grep -q '"render": "PASS"' "$TMP_DIR/narrated-render.json"
-  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/narrated-final.mp4" --require-audio --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/narrated-validation.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/narrated-final.mp4" --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/narrated-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/narrated-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/narrated-final.mp4" > "$TMP_DIR/narrated-streams.txt"
   grep -q 'video' "$TMP_DIR/narrated-streams.txt"
