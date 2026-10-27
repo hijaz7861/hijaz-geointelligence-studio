@@ -49,7 +49,8 @@ def validate_scene(scene):
     for route in scene["routes"]:
         if not isinstance(route, dict):
             raise CinematicMapError("Each route must be an object.")
-        if route.get("entity_id") not in ids:
+        entity_id = route.get("entity_id")
+        if not isinstance(entity_id, str) or entity_id not in ids:
             raise CinematicMapError("Route references an unknown entity.")
         points = route.get("points")
         if not isinstance(points, list) or len(points) < 2:
