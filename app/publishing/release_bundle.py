@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 from app.editorial.script_validator import ProjectValidationError, release_blockers, validate_project_file
-from app.research.claim_ledger import ClaimLedgerError, load_claims
+from app.research.claim_ledger import DEFAULT_CLAIMS, ClaimLedgerError, load_claims
 from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
 from app.video.render_validator import RenderValidationError, inspect_rendered_video
 from app.voice.srt_validator import SubtitleValidationError, validate_srt_file
@@ -51,10 +51,11 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         if rights in {"licensed","permission_granted","public_domain_verified"}:
             if not str(asset.get("rights_evidence","")).strip(): blockers.append(f"Media asset {asset.get('asset_id')} has no rights evidence text.")
             if str(asset.get("rights_evidence","")).strip().lower() in {"synthetic fixture evidence","fixture","unknown","n/a","none"}: blockers.append(f"Media asset {asset.get('asset_id')} rights evidence appears to be a placeholder.")
+    effective_claims_path = claims_path if claims_path is not None else DEFAULT_CLAIMS
     inputs=[
         _file_evidence(project_path,"project"),
         _file_evidence(source_path,"source_ledger"),
-        _file_evidence(claims_path,"claim_ledger") if claims_path is not None else _file_evidence(Path(source_path).resolve().parent/"claims.json","claim_ledger"),
+        _file_evidence(effective_claims_path,"claim_ledger"),
         _file_evidence(render_path,"rendered_video"),
         _file_evidence(subtitle_path,"subtitle_file"),
         _file_evidence(metadata_path,"youtube_metadata_draft"),
