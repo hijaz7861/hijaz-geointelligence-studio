@@ -27,6 +27,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Require creator, attribution, usage scope, and rights-evidence metadata for every media asset.
 - [ ] Add structured license/permission evidence URLs and expiry/review dates.
 - [x] Block media with unknown or restricted rights at the release checklist stage.
+- [x] Add optional offline eSpeak WAV narration for installed language voices with timeout, output-safety, and no-silent-fallback checks.
+- [ ] Add high-quality human/cloud narration provider for languages/voices not installed locally (Urdu is not available in the current validation environment).
 - [ ] Build original graphics, timelines, maps, captions, and narration tracks.
 - [x] Add an optional local FFmpeg adapter to mux existing video, narration, and selectable SRT subtitle streams; test command safety and failure handling.
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
