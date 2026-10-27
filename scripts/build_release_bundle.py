@@ -16,6 +16,13 @@ def main() -> int:
  p.add_argument('--min-width',type=int,default=1280); p.add_argument('--min-height',type=int,default=720)
  p.add_argument('--output',required=True,type=Path); p.add_argument('--overwrite',action='store_true')
  a=p.parse_args()
+ if a.min_width < 1 or a.min_height < 1: p.error('--min-width and --min-height must be positive')
+ output=a.output.expanduser().resolve()
+ protected=[a.project.expanduser().resolve(),a.sources_file.expanduser().resolve()]
+ if a.claims_file is not None: protected.append(a.claims_file.expanduser().resolve())
+ for candidate in (a.render,a.subtitles,a.metadata):
+  if candidate is not None: protected.append(candidate.expanduser().resolve())
+ if output in protected: p.error('--output must not overwrite a project, ledger, render, subtitle, or metadata input')
  try:
   bundle=build_release_bundle(a.project,source_path=a.sources_file,claims_path=a.claims_file,render_path=a.render,subtitle_path=a.subtitles,metadata_path=a.metadata,min_width=a.min_width,min_height=a.min_height)
   output=write_release_bundle(bundle,a.output,overwrite=a.overwrite)
