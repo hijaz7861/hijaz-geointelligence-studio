@@ -74,7 +74,7 @@ grep -q '"validation": "PASS"' "$TMP_DIR/subtitles.json"
 grep -q '"cue_count": 2' "$TMP_DIR/subtitles.json"
 printf 'PASS: SRT validation CLI\n'
 
-if command -v ffmpeg >/dev/null 2>&1; then
+if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   printf '\n[8/8] Optional FFmpeg end-to-end smoke render\n'
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
@@ -91,7 +91,7 @@ SRT
   grep -q 'subtitle' "$TMP_DIR/streams.txt"
   printf 'PASS: real MP4 render contains video, audio, and subtitle streams\n'
 else
-  printf '\nSKIP: FFmpeg integration render (ffmpeg not installed)\n'
+  printf '\nSKIP: FFmpeg integration render (ffmpeg and/or ffprobe not installed)\n'
 fi
 
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
