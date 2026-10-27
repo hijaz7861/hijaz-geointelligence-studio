@@ -69,6 +69,7 @@ The sample package is intentionally not approved for publishing. The validator c
 - [YouTube release metadata draft](docs/release-metadata.md)
 - [Local FFmpeg video assembly](docs/video-assembly.md)
 - [Rendered-video technical validation](docs/render-validation.md)
+- [Release evidence bundle](docs/release-evidence-bundle.md)
 - [Offline narration generation and language limitations](docs/narration.md)
 - [Editorial policy](docs/editorial-policy.md)
 - [Implementation roadmap and completion criteria](docs/roadmap.md)
