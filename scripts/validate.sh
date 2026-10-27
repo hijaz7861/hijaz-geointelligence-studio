@@ -21,7 +21,7 @@ grep -q -- '--project' "$TMP_DIR/project-help.txt"
 "$PYTHON" scripts/validate_srt.py --help > "$TMP_DIR/srt-help.txt"
 grep -q -- '--max-chars-per-line' "$TMP_DIR/srt-help.txt"
 "$PYTHON" scripts/render_video.py --help > "$TMP_DIR/render-help.txt"
-grep -q -- '--subtitles' "$TMP_DIR/render-help.txt"
+grep -q -- '--subtitles' "$TMP_DIR/render-help.txt"\n"$PYTHON" scripts/render_cinematic_map.py --help > "$TMP_DIR/cinematic-map-help.txt"\ngrep -q -- '--scene' "$TMP_DIR/cinematic-map-help.txt"
 "$PYTHON" scripts/build_cited_draft.py --help > "$TMP_DIR/draft-help.txt"
 grep -q -- '--claims-file' "$TMP_DIR/draft-help.txt"
 "$PYTHON" scripts/build_release_metadata.py --help > "$TMP_DIR/metadata-help.txt"
@@ -224,4 +224,4 @@ grep -q '"Final rendered video is missing."' "$TMP_DIR/release-bundle.json"
 grep -q '"YouTube metadata draft is missing."' "$TMP_DIR/release-bundle.json"
 printf 'PASS: evidence bundle created and missing production evidence blocks release\n'
 
-printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
+printf '\n[19/19] Cinematic map scene validation and SVG smoke render\n'\n"$PYTHON" scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output "$TMP_DIR/cinematic-scene.svg" > "$TMP_DIR/cinematic-scene-result.json"\ngrep -q '"status": "RENDERED_SVG"' "$TMP_DIR/cinematic-scene-result.json"\ngrep -q 'animateMotion' "$TMP_DIR/cinematic-scene.svg"\ngrep -q 'ILLUSTRATIVE' "$TMP_DIR/cinematic-scene.svg"\nprintf 'PASS: schematic route animation generated; geographic basemap and MP4 render remain future stages\\n'\n\nprintf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
