@@ -1,0 +1,16 @@
+{
+  "project_id": "sample-not-for-publication",
+  "title": "Sample documentary project — fixture only",
+  "language": "en",
+  "target_duration_seconds": 180,
+  "script": "Synthetic placeholder. Replace with an editor-reviewed script before production.",
+  "claim_ids": [],
+  "media_assets": [],
+  "approval": {
+    "script_reviewed": false,
+    "translation_reviewed": false,
+    "media_rights_reviewed": false,
+    "final_video_reviewed": false,
+    "approved_by": ""
+  }
+}
