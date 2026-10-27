@@ -102,9 +102,6 @@ def render_animated_svg(scene, output_path, *, overwrite=False):
     parts.append('</g>')
     parts.append('<text x="70" y="42" fill="#f0f6fc" font-size="27" font-family="sans-serif" font-weight="700">' + xml.escape(str(scene["title"])) + '</text>')
     parts.append('<text x="70" y="680" fill="#9fb3c8" font-size="16" font-family="sans-serif">SCHEMATIC MAP • NOT TO SCALE</text>')
-    for entity in scene["entities"]:
-        label = xml.escape(str(entity["label"]))
-        parts.append(f'<g id="entity-{xml.escape(str(entity["id"]))}"><circle cx="0" cy="0" r="7" fill="#ffc857"/><text x="13" y="-12" fill="#fff" font-size="18">{label}</text></g>')
     for route in scene["routes"]:
         coords = [_xy(p["lon"], p["lat"], bounds) for p in route["points"]]
         path = " ".join(("M" if i == 0 else "L") + f" {x} {y}" for i, (x, y) in enumerate(coords))
@@ -112,7 +109,9 @@ def render_animated_svg(scene, output_path, *, overwrite=False):
         start_t = route["points"][0]["t"]
         end_t = route["points"][-1]["t"]
         travel = max(0.5, end_t - start_t)
-        parts.append(f'<circle r="8" fill="#ffcc66" stroke="#fff" stroke-width="2"><animateMotion dur="{travel}s" begin="{start_t}s" repeatCount="1" fill="freeze" path="{path}"/></circle>')
+        entity_label = next(e["label"] for e in scene["entities"] if e["id"] == route["entity_id"])
+        entity_label = xml.escape(str(entity_label))
+        parts.append(f'<g><circle r="8" fill="#ffcc66" stroke="#fff" stroke-width="2"/><text x="13" y="-12" fill="#fff" font-size="18">{entity_label}</text><animateMotion dur="{travel}s" begin="{start_t}s" repeatCount="1" fill="freeze" path="{path}"/></g>')
         x, y = coords[-1]
         parts.append(f'<circle cx="{x}" cy="{y}" r="6" fill="#ff6b6b"/>')
         if route.get("illustrative", False):
