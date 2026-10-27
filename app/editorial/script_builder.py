@@ -20,6 +20,8 @@ def build_cited_draft(claims: list[dict], *, title: str, language: str = "en") -
         urls = item.get("source_urls", [])
         if not claim or not urls:
             raise ScriptBuildError(f"Claim {index} is missing its text or source URLs.")
+        if "\n" in claim or "\r" in claim or "[[claim:" in claim or "]]" in claim:
+            raise ScriptBuildError(f"Claim {index} must be a single line without citation-marker delimiters.")
         lines.append(f"## Segment {index}")
         lines.append("")
         lines.append(f"[[claim:{claim}]] {claim}")
@@ -27,7 +29,7 @@ def build_cited_draft(claims: list[dict], *, title: str, language: str = "en") -
         lines.append(f"[EDITORIAL] Evidence label: {status}. Confirm that each linked source directly supports the exact wording before narration.")
         lines.append("")
         for url in urls:
-            lines.append(f"Source: {url}")
+            lines.append(f"[EDITORIAL] Source: {url}")
         lines.append("")
     lines.append("[EDITORIAL] End of draft. Resolve unverified claims, check contradictory evidence, confirm media rights, and obtain human approval before release.")
     return "\n".join(lines).rstrip() + "\n"
