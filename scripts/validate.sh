@@ -83,13 +83,13 @@ printf 'PASS: SRT validation CLI\n'
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   printf '\n[8/12] Optional FFmpeg end-to-end smoke render\n'
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
-  ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
+  ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/voice-narration.wav"
   cat > "$TMP_DIR/render.srt" <<'SRT'
 1
 00:00:00,100 --> 00:00:00,700
 Synthetic render test.
 SRT
-  "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/final.mp4" > "$TMP_DIR/render.json"
+  "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/voice-narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/final.mp4" > "$TMP_DIR/render.json"
   grep -q '"render": "PASS"' "$TMP_DIR/render.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/final.mp4" > "$TMP_DIR/streams.txt"
   grep -q 'video' "$TMP_DIR/streams.txt"
@@ -149,9 +149,9 @@ printf 'PASS: source -> claim -> cited draft -> project validator -> blocked met
 if command -v espeak-ng >/dev/null 2>&1 || command -v espeak >/dev/null 2>&1; then
   printf '\n[12/12] Optional offline narration smoke test\n'
   printf 'Synthetic narration test.\n' > "$TMP_DIR/narration.txt"
-  "$PYTHON" scripts/generate_narration.py --text-file "$TMP_DIR/narration.txt" --language en --output "$TMP_DIR/narration.wav" > "$TMP_DIR/narration.json"
-  grep -q '"narration": "PASS"' "$TMP_DIR/narration.json"
-  test -s "$TMP_DIR/narration.wav"
+  "$PYTHON" scripts/generate_narration.py --text-file "$TMP_DIR/narration.txt" --language en --output "$TMP_DIR/voice-narration.wav" > "$TMP_DIR/voice-narration.json"
+  grep -q '"narration": "PASS"' "$TMP_DIR/voice-narration.json"
+  test -s "$TMP_DIR/voice-narration.wav"
   printf 'PASS: offline English WAV narration generated\n'
 else
   printf '\nSKIP: offline narration test (eSpeak not installed)\n'
