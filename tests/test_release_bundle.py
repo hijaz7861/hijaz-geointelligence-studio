@@ -8,6 +8,7 @@ from unittest.mock import patch
 from app.publishing.release_bundle import ReleaseBundleError, build_release_bundle, sha256_file, write_release_bundle
 from app.research.source_ledger import add_source
 from app.research.claim_ledger import add_claim
+ROOT=Path(__file__).resolve().parents[1]
 SOURCE={"title":"Synthetic report","url":"https://example.org/report","published_at":"2026-10-20","source_type":"independent_reporting","claim_status":"independent_reporting","notes":"Synthetic fixture only."}
 CLAIM={"claim":"Synthetic documentary claim","status":"independent_reporting","source_urls":[SOURCE["url"]],"notes":"Fixture only."}
 PROJECT={"project_id":"bundle-fixture","title":"Synthetic release fixture","language":"en","target_duration_seconds":60,"script":"[[claim:Synthetic documentary claim]] Synthetic documentary claim.","claim_ids":[CLAIM["claim"]],"media_assets":[{"asset_id":"asset-fixture","origin_url":SOURCE["url"],"rights_status":"unknown","creator":"Fixture","attribution":"Fixture","usage_scope":"Never publish","rights_evidence":"Fixture only","notes":"Synthetic test"}],"approval":{"script_reviewed":False,"translation_reviewed":False,"media_rights_reviewed":False,"final_video_reviewed":False,"approved_by":""}}
