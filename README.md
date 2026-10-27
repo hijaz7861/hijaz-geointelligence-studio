@@ -29,7 +29,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - `app/research/` — source and claim ledgers
 - `app/editorial/` — documentary package validation and release checks
 - `app/video/` — FFmpeg muxing adapter; graphics generation remains planned
-- `app/voice/` — planned narration and subtitle workflows
+- `app/voice/` — SRT validation and optional offline eSpeak narration
 - `app/publishing/` — planned YouTube publishing preparation
 - `config/` — non-secret configuration
 - `data/` — local research records and drafts
