@@ -74,6 +74,7 @@ The sample package is intentionally not approved for publishing. The validator c
 - [Offline narration generation and language limitations](docs/narration.md)
 - [Editorial policy](docs/editorial-policy.md)
 - [Implementation roadmap and completion criteria](docs/roadmap.md)
+- [Production readiness and customer handoff gates](docs/production-readiness.md)
 
 ## Completion status
-This is an evolving MVP, not a completed production video-automation system. Completion requires a reproducible end-to-end sample from source research through reviewed script, rights-cleared assets, subtitles/narration, rendered video, and human approval. See the roadmap for remaining work.
+This is an evolving MVP, not a completed production video-automation system. The current dashboard is loopback-only and read-only; secure multi-user collaboration is not implemented. Completion requires a reproducible end-to-end sample from source research through reviewed script, rights-cleared assets, subtitles/narration, rendered video, and human approval. See the roadmap and [production readiness gates](docs/production-readiness.md) before relying on it for customer delivery.
