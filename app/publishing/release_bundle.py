@@ -85,7 +85,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
             else:
                 if metadata.get("publish_ready") is not False: blockers.append("Metadata draft must explicitly keep publish_ready=false.")
                 if metadata.get("release_blockers"): blockers.append("Metadata draft still reports release blockers.")
-        except (OSError,json.JSONDecodeError) as exc: blockers.append(f"Metadata draft is unreadable JSON: {exc}")
+        except (OSError,UnicodeError,json.JSONDecodeError) as exc: blockers.append(f"Metadata draft is unreadable JSON/UTF-8: {exc}")
     if not project.get("media_assets"): blockers.append("No media assets are listed in the project manifest.")
     approval=project.get("approval",{})
     human_approval={key:approval.get(key) for key in ("script_reviewed","translation_reviewed","media_rights_reviewed","final_video_reviewed","approved_by")}
