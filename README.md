@@ -7,6 +7,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 
 ## Initial MVP
 - Collect and record public sources in a validated local ledger.
+- Track editorial claims and reject references to URLs absent from the source ledger.
 - Separate verified facts, official claims, independent reporting, analysis, and unverified claims.
 - Draft cited documentary scripts.
 - Prepare original narration, subtitles, and video-production assets.
@@ -21,7 +22,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Require human review before public release.
 
 ## Project Layout
-- `app/research/` — source collection and validation
+- `app/research/` — source and claim collection, validation, and traceability
 - `app/editorial/` — script and fact-check workflows
 - `app/video/` — video assembly and graphics
 - `app/voice/` — narration and subtitle workflows
@@ -35,7 +36,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 ## Development
 Requires Python 3.10 or newer; no third-party package is required for the current MVP.
 
-Run the full local validation sequence (unit tests, syntax compilation, CLI help, and add/duplicate smoke tests):
+Run the full local validation sequence (unit tests, syntax compilation, CLI help, and source/claim smoke tests):
 
 ```sh
 ./scripts/validate.sh
@@ -46,6 +47,11 @@ You can also run individual checks:
 ```sh
 python -m unittest discover -s tests -v
 python scripts/add_source.py --help
+python scripts/add_claim.py --help
 ```
 
-No GitHub Actions workflow is enabled; this validation script runs locally and does not consume Actions minutes. The source ledger records metadata but does not automatically establish factual accuracy.
+No GitHub Actions workflow is enabled; this validation script runs locally and does not consume Actions minutes. The source and claim ledgers validate metadata and traceability but do not automatically establish factual accuracy.
+
+## Claim traceability
+
+See [`docs/claim-ledger.md`](docs/claim-ledger.md) for adding claims linked to recorded sources. The ledger is a workflow safeguard, not an automated fact-checker.
