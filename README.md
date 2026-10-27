@@ -5,57 +5,54 @@ AI-powered geopolitical research and multilingual documentary production.
 ## Mission
 Build a source-grounded workflow for researching public geopolitical events and producing educational documentaries in Urdu, English, Russian, and Chinese.
 
-## Initial MVP
-- Collect and record public sources in a validated local ledger.
+## Current capabilities
+- Validate public-source metadata, publication dates, source categories, and duplicate URLs.
 - Track editorial claims and reject references to URLs absent from the source ledger.
-- Separate verified facts, official claims, independent reporting, analysis, and unverified claims.
-- Draft cited documentary scripts.
-- Prepare original narration, subtitles, and video-production assets.
-- Require human approval before publishing.
+- Validate a documentary project package and ensure its claims and media-origin URLs are traceable.
+- Produce a release-blocker checklist for unverified claims, uncleared media rights, and missing human approvals.
+- Run repeatable local validation without consuming GitHub Actions minutes.
 
-## Editorial and Safety Rules
-- Use public, non-operational information.
-- Do not produce real-time targeting or attack-optimization guidance.
-- Respect copyright and footage licensing.
-- Preserve source URLs and publication dates.
-- Never present an allegation as an established fact.
-- Require human review before public release.
+## Editorial and safety rules
+- Use public, non-operational information; do not generate real-time targeting or attack-optimization guidance.
+- Distinguish verified facts, official claims, independent reporting, analysis, and unverified information.
+- Respect copyright and document media permission/licensing evidence.
+- Never present an allegation as established fact; a metadata validator does not prove truth.
+- Require human review before public release. The project validator does not publish videos.
 
-## Project Layout
-- `app/research/` — source and claim collection, validation, and traceability
-- `app/editorial/` — script and fact-check workflows
-- `app/video/` — video assembly and graphics
-- `app/voice/` — narration and subtitle workflows
-- `app/publishing/` — YouTube publishing preparation
+## Project layout
+- `app/research/` — source and claim ledgers
+- `app/editorial/` — documentary package validation and release checks
+- `app/video/` — planned video assembly and graphics
+- `app/voice/` — planned narration and subtitle workflows
+- `app/publishing/` — planned YouTube publishing preparation
 - `config/` — non-secret configuration
 - `data/` — local research records and drafts
-- `docs/` — project and editorial documentation
-- `scripts/` — developer utilities and local validation
+- `docs/` — policy, schema, and roadmap
+- `scripts/` — command-line utilities and validation
 - `tests/` — automated tests
 
-## Development
-Requires Python 3.10 or newer; no third-party package is required for the current MVP.
+## Local development
+Requires Python 3.10 or newer; current modules use the Python standard library.
 
-Run the full local validation sequence (unit tests, syntax compilation, CLI help, and source/claim smoke tests):
+Run all local checks:
 
 ```sh
 ./scripts/validate.sh
 ```
 
-You can also run individual checks:
+Validate a documentary package:
 
 ```sh
-python -m unittest discover -s tests -v
-python scripts/add_source.py --help
-python scripts/add_claim.py --help
+python scripts/validate_project.py --project data/projects/sample_project.json
 ```
 
-No GitHub Actions workflow is enabled; this validation script runs locally and does not consume Actions minutes. The source and claim ledgers validate metadata and traceability but do not automatically establish factual accuracy.
+The sample package is intentionally not approved for publishing. The validator checks structure and traceability; it does not fact-check claims or certify copyright status. GitHub Actions are not required for these checks.
 
-## Claim traceability
+## Documentation
+- [Claim ledger workflow](docs/claim-ledger.md)
+- [Documentary project schema and release gate](docs/documentary-project-schema.md)
+- [Editorial policy](docs/editorial-policy.md)
+- [Implementation roadmap and completion criteria](docs/roadmap.md)
 
-See [`docs/claim-ledger.md`](docs/claim-ledger.md) for adding claims linked to recorded sources. The ledger is a workflow safeguard, not an automated fact-checker.
-
-## Project completion plan
-
-See [`docs/roadmap.md`](docs/roadmap.md) for the phased roadmap and explicit completion criteria. This project is not yet production-complete; code and test coverage will be expanded phase by phase.
+## Completion status
+This is an evolving MVP, not a completed production video-automation system. Completion requires a reproducible end-to-end sample from source research through reviewed script, rights-cleared assets, subtitles/narration, rendered video, and human approval. See the roadmap for remaining work.
