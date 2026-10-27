@@ -29,15 +29,23 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - `config/` — non-secret configuration
 - `data/` — local research records and drafts
 - `docs/` — project and editorial documentation
-- `scripts/` — developer utilities
+- `scripts/` — developer utilities and local validation
 - `tests/` — automated tests
 
 ## Development
 Requires Python 3.10 or newer; no third-party package is required for the current MVP.
+
+Run the full local validation sequence (unit tests, syntax compilation, CLI help, and add/duplicate smoke tests):
+
+```sh
+./scripts/validate.sh
+```
+
+You can also run individual checks:
 
 ```sh
 python -m unittest discover -s tests -v
 python scripts/add_source.py --help
 ```
 
-No GitHub Actions workflow is enabled; local test execution is the current validation path. The source ledger records metadata but does not automatically establish factual accuracy.
+No GitHub Actions workflow is enabled; this validation script runs locally and does not consume Actions minutes. The source ledger records metadata but does not automatically establish factual accuracy.
