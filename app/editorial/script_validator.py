@@ -63,6 +63,8 @@ def release_blockers(project: dict[str, Any], claims: list[dict[str, Any]]) -> l
     """Return explicit blockers; passing structure does not itself authorize publishing."""
     blockers = []
     by_text = {c["claim"]: c for c in claims}
+    if not project.get("claim_ids"):
+        blockers.append("No claims are linked to this project.")
     for text in project.get("claim_ids", []):
         claim = by_text.get(text)
         if claim is None: blockers.append(f"Claim missing from ledger: {text}")
