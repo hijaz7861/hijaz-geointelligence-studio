@@ -50,7 +50,9 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         media_evidence.append({"asset_id":asset.get("asset_id"),"origin_url":asset.get("origin_url"),"rights_status":rights,"creator":asset.get("creator"),"attribution":asset.get("attribution"),"usage_scope":asset.get("usage_scope"),"rights_evidence":asset.get("rights_evidence"),"notes":asset.get("notes")})
         if rights in {"licensed","permission_granted","public_domain_verified"}:
             if not str(asset.get("rights_evidence","")).strip(): blockers.append(f"Media asset {asset.get('asset_id')} has no rights evidence text.")
-            if str(asset.get("rights_evidence","")).strip().lower() in {"synthetic fixture evidence","fixture","unknown","n/a","none"}: blockers.append(f"Media asset {asset.get('asset_id')} rights evidence appears to be a placeholder.")
+            evidence_text = str(asset.get("rights_evidence","")).strip().lower()
+            placeholder_terms = ("synthetic", "fixture", "placeholder", "unknown", "n/a", "not a real license", "not verified", "none")
+            if not evidence_text or any(term in evidence_text for term in placeholder_terms): blockers.append(f"Media asset {asset.get('asset_id')} rights evidence appears to be a placeholder or requires manual verification.")
     effective_claims_path = claims_path if claims_path is not None else DEFAULT_CLAIMS
     inputs=[
         _file_evidence(project_path,"project"),
@@ -79,8 +81,10 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     else:
         try:
             metadata=json.loads(Path(metadata_path).read_text(encoding="utf-8"))
-            if metadata.get("publish_ready") is not False: blockers.append("Metadata draft must explicitly keep publish_ready=false.")
-            if metadata.get("release_blockers"): blockers.append("Metadata draft still reports release blockers.")
+            if not isinstance(metadata, dict): blockers.append("Metadata draft must be a JSON object.")
+            else:
+                if metadata.get("publish_ready") is not False: blockers.append("Metadata draft must explicitly keep publish_ready=false.")
+                if metadata.get("release_blockers"): blockers.append("Metadata draft still reports release blockers.")
         except (OSError,json.JSONDecodeError) as exc: blockers.append(f"Metadata draft is unreadable JSON: {exc}")
     if not project.get("media_assets"): blockers.append("No media assets are listed in the project manifest.")
     approval=project.get("approval",{})
