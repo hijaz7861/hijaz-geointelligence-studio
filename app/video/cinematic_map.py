@@ -15,12 +15,24 @@ def _number(value, label):
         raise CinematicMapError(f"{label} must be a finite number.")
     return float(value)
 
+def _validate_illustrative(value, label):
+    if not isinstance(value, bool):
+        raise CinematicMapError(f"{label}.illustrative must be a boolean.")
+    return value
+
+def _validate_source_refs(value, label):
+    if not isinstance(value, list) or not value or any(not isinstance(ref, str) or not ref.strip() for ref in value):
+        raise CinematicMapError(f"{label}.source_refs must be a non-empty list of non-empty strings.")
+
 def validate_scene(scene):
     if not isinstance(scene, dict):
         raise CinematicMapError("Scene must be a JSON object.")
     for key in ("scene_id", "title", "mode", "duration_seconds", "map", "entities", "routes", "events"):
         if key not in scene:
             raise CinematicMapError(f"Missing required field: {key}")
+    for key in ("scene_id", "title"):
+        if not isinstance(scene[key], str) or not scene[key].strip():
+            raise CinematicMapError(f"{key} must be a non-empty string.")
     if scene["mode"] not in ("historical", "educational", "fictional"):
         raise CinematicMapError("mode must be historical, educational, or fictional.")
     duration = scene["duration_seconds"]
@@ -66,22 +78,24 @@ def validate_scene(scene):
             if not west <= lon <= east or not south <= lat <= north:
                 raise CinematicMapError("Route point lies outside map bounds.")
             last_t = t
-        if not route.get("illustrative", False) and not route.get("source_refs"):
-            raise CinematicMapError("Factual routes require source_refs; mark reconstructions illustrative.")
+        illustrative = _validate_illustrative(route.get("illustrative", False), "route")
+        if not illustrative:
+            _validate_source_refs(route.get("source_refs"), "route")
     for event in scene["events"]:
         if not isinstance(event, dict):
             raise CinematicMapError("Each event must be an object.")
         t = _number(event.get("t"), "event t")
-        if not 0 <= t <= duration or not event.get("label"):
+        if not 0 <= t <= duration or not isinstance(event.get("label"), str) or not event["label"].strip():
             raise CinematicMapError("Event timestamp or label is invalid.")
+        illustrative = _validate_illustrative(event.get("illustrative", False), "event")
         if ("lon" in event) != ("lat" in event):
             raise CinematicMapError("Events must provide both lon and lat, or neither.")
         if "lon" in event and "lat" in event:
             lon, lat = _number(event["lon"], "event lon"), _number(event["lat"], "event lat")
             if not west <= lon <= east or not south <= lat <= north:
                 raise CinematicMapError("Event lies outside map bounds.")
-        if not event.get("illustrative", False) and not event.get("source_refs"):
-            raise CinematicMapError("Factual events require source_refs; mark reconstructions illustrative.")
+        if not illustrative:
+            _validate_source_refs(event.get("source_refs"), "event")
     return scene
 
 def _xy(lon, lat, bounds, width=1280, height=720, margin=70):
