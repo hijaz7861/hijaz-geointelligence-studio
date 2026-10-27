@@ -20,7 +20,7 @@ python scripts/render_video.py \
   --output documentary.mp4
 ```
 
-The subtitle is embedded as a selectable MP4 `mov_text` track, not burned into the picture. Output is not overwritten unless `--overwrite` is explicitly provided. FFmpeg is called with an argument list (no shell) and a configurable timeout.
+The subtitle is embedded as a selectable MP4 `mov_text` track, not burned into the picture. Output is not overwritten unless `--overwrite` is explicitly provided. Rendering occurs to a temporary MP4 and replaces the destination only after success, preserving an existing destination if FFmpeg fails or times out. FFmpeg is called with an argument list (no shell) and a configurable timeout.
 
 ## Verification
 
