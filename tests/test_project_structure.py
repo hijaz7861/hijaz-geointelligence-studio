@@ -39,6 +39,7 @@ class ProjectStructureTests(unittest.TestCase):
             "run_dashboard.py",
             "validate_render.py",
             "import_feeds.py",
+            "build_release_bundle.py",
         ):
             with self.subTest(script=name):
                 self.assertTrue((ROOT / "scripts" / name).is_file())
