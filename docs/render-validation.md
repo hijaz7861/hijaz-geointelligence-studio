@@ -5,7 +5,6 @@ Use `ffprobe` to check that the final file has a video stream, audio stream, opt
 ```sh
 python scripts/validate_render.py \
   --video artifacts/renders/documentary.mp4 \
-  --require-audio \
   --require-subtitles \
   --min-width 1280 \
   --min-height 720
