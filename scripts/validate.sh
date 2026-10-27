@@ -83,7 +83,7 @@ printf 'PASS: SRT validation CLI\n'
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   printf '\n[8/12] Optional FFmpeg end-to-end smoke render\n'
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
-  ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/tts-narration.wav"
+  ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
   cat > "$TMP_DIR/render.srt" <<'SRT'
 1
 00:00:00,100 --> 00:00:00,700
