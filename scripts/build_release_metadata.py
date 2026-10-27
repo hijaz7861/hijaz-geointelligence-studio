@@ -23,8 +23,9 @@ def main() -> int:
     try:
         project=validate_project_file(args.project,args.claims_file,args.sources_file)
         claims=load_claims(args.claims_file,args.sources_file) if args.claims_file else load_claims(source_path=args.sources_file)
-        source_urls={item['url'] for item in load_sources(args.sources_file)}
-        package=build_metadata_package(project,claims,source_urls)
+        source_records=load_sources(args.sources_file)
+        source_urls={item['url'] for item in source_records}
+        package=build_metadata_package(project,claims,source_urls,source_records)
     except (MetadataBuildError,ValueError,OSError) as exc:
         print(f'ERROR: {exc}',file=sys.stderr); return 2
     output=args.output.expanduser().resolve(); output.parent.mkdir(parents=True,exist_ok=True)
