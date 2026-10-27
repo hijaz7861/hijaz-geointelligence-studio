@@ -47,7 +47,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [ ] If YouTube API upload is later added, use least-privilege OAuth, secret-free logs, private/draft default, and a clear approval gate.
 
 ## Phase 5 — Usable application
-- [ ] Build a local-first dashboard for research, claims, script drafts, assets, and review status.
+- [x] Build a loopback-only read-only dashboard for source/claim counts, validation status, corroboration warnings, and release blockers.
+- [ ] Expand dashboard to manage research, script drafts, assets, and review status after authentication and audit controls are designed.
 - [ ] Add project-scoped storage, backup/restore, audit trail, and safe handling of credentials.
 - [ ] Add integration tests, dependency/security checks, and reproducible packaging.
 - [ ] Deploy only after local end-to-end tests pass and a hosting target is explicitly configured.
