@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from app.voice.srt_validator import SubtitleValidationError, validate_srt_file
 
 class VideoAssemblyError(RuntimeError):
     """Raised when inputs or FFmpeg assembly fail validation."""
@@ -23,6 +24,11 @@ def assemble_video(video_path: str | Path, audio_path: str | Path, output_path: 
     if not video.is_file(): raise VideoAssemblyError(f"Video input does not exist: {video}")
     if not audio.is_file(): raise VideoAssemblyError(f"Audio input does not exist: {audio}")
     if subtitles is not None and not subtitles.is_file(): raise VideoAssemblyError(f"Subtitle input does not exist: {subtitles}")
+    if subtitles is not None:
+        try:
+            validate_srt_file(subtitles)
+        except SubtitleValidationError as exc:
+            raise VideoAssemblyError(f"Subtitle validation failed: {exc}") from exc
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg: raise VideoAssemblyError("FFmpeg executable was not found on PATH.")
     if output in {video, audio, subtitles}:
