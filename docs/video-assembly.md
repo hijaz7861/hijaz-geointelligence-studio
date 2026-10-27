@@ -26,4 +26,4 @@ The subtitle is validated before rendering, then embedded as a selectable MP4 `m
 
 Run `./scripts/validate.sh`. If FFmpeg is installed, the script creates tiny synthetic test media, renders a temporary MP4, and checks that video, audio, and subtitle streams exist. If FFmpeg is absent, that integration step is skipped. Unit tests still exercise command construction and failure handling.
 
-A successful mux only verifies that the container was assembled. Editors must still review visual quality, audio levels, subtitle timing, licensing, factual accuracy, and the final rendered video before release.
+After muxing, run `python scripts/validate_render.py --video documentary.mp4 --require-audio --require-subtitles --min-width 1280 --min-height 720` to check streams, duration, and resolution before human review. A successful mux only verifies that the container was assembled. Editors must still review visual quality, audio levels, subtitle timing, licensing, factual accuracy, and the final rendered video before release.
