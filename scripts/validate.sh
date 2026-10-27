@@ -55,4 +55,19 @@ grep -q '"structural_validation": "PASS"' "$TMP_DIR/project.json"
 grep -q '"publish_ready": false' "$TMP_DIR/project.json"
 grep -q 'Human approval missing' "$TMP_DIR/project.json"
 printf 'PASS: sample validates structurally and remains blocked from publishing\n'
+printf '\n[7/7] Subtitle parser and CLI smoke test\n'
+cat > "$TMP_DIR/captions.srt" <<'SRT'
+1
+00:00:00,000 --> 00:00:01,500
+Synthetic subtitle fixture.
+
+2
+00:00:01,600 --> 00:00:03,000
+Second test line.
+SRT
+"$PYTHON" scripts/validate_srt.py "$TMP_DIR/captions.srt" > "$TMP_DIR/subtitles.json"
+grep -q '"validation": "PASS"' "$TMP_DIR/subtitles.json"
+grep -q '"cue_count": 2' "$TMP_DIR/subtitles.json"
+printf 'PASS: SRT validation CLI\n'
+
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
