@@ -18,6 +18,10 @@ grep -q -- '--published-at' "$TMP_DIR/help.txt"
 grep -q -- '--source-url' "$TMP_DIR/claim-help.txt"
 "$PYTHON" scripts/validate_project.py --help > "$TMP_DIR/project-help.txt"
 grep -q -- '--project' "$TMP_DIR/project-help.txt"
+"$PYTHON" scripts/validate_srt.py --help > "$TMP_DIR/srt-help.txt"
+grep -q -- '--max-chars-per-line' "$TMP_DIR/srt-help.txt"
+"$PYTHON" scripts/render_video.py --help > "$TMP_DIR/render-help.txt"
+grep -q -- '--subtitles' "$TMP_DIR/render-help.txt"
 printf 'PASS: all CLI help screens\n'
 printf '\n[4/6] Source CLI add + duplicate rejection smoke test\n'
 "$PYTHON" scripts/add_source.py \
@@ -69,5 +73,25 @@ SRT
 grep -q '"validation": "PASS"' "$TMP_DIR/subtitles.json"
 grep -q '"cue_count": 2' "$TMP_DIR/subtitles.json"
 printf 'PASS: SRT validation CLI\n'
+
+if command -v ffmpeg >/dev/null 2>&1; then
+  printf '\n[8/8] Optional FFmpeg end-to-end smoke render\n'
+  ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
+  ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
+  cat > "$TMP_DIR/render.srt" <<'SRT'
+1
+00:00:00,100 --> 00:00:00,700
+Synthetic render test.
+SRT
+  "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/final.mp4" > "$TMP_DIR/render.json"
+  grep -q '"render": "PASS"' "$TMP_DIR/render.json"
+  ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/final.mp4" > "$TMP_DIR/streams.txt"
+  grep -q 'video' "$TMP_DIR/streams.txt"
+  grep -q 'audio' "$TMP_DIR/streams.txt"
+  grep -q 'subtitle' "$TMP_DIR/streams.txt"
+  printf 'PASS: real MP4 render contains video, audio, and subtitle streams\n'
+else
+  printf '\nSKIP: FFmpeg integration render (ffmpeg not installed)\n'
+fi
 
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
