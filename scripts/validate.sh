@@ -6,12 +6,12 @@ cd "$ROOT_DIR"
 PYTHON=${PYTHON:-python3}
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT HUP INT TERM
-printf '\n[1/10] Unit tests\n'
+printf '\n[1/11] Unit tests\n'
 "$PYTHON" -m unittest discover -s tests -v
-printf '\n[2/10] Syntax compilation\n'
+printf '\n[2/11] Syntax compilation\n'
 "$PYTHON" -m compileall -q app scripts tests
 printf 'PASS: compileall\n'
-printf '\n[3/10] CLI help\n'
+printf '\n[3/11] CLI help\n'
 "$PYTHON" scripts/add_source.py --help > "$TMP_DIR/help.txt"
 grep -q -- '--published-at' "$TMP_DIR/help.txt"
 "$PYTHON" scripts/add_claim.py --help > "$TMP_DIR/claim-help.txt"
@@ -27,7 +27,7 @@ grep -q -- '--claims-file' "$TMP_DIR/draft-help.txt"
 "$PYTHON" scripts/build_release_metadata.py --help > "$TMP_DIR/metadata-help.txt"
 grep -q -- '--project' "$TMP_DIR/metadata-help.txt"
 printf 'PASS: all CLI help screens\n'
-printf '\n[4/10] Source CLI add + duplicate rejection smoke test\n'
+printf '\n[4/11] Source CLI add + duplicate rejection smoke test\n'
 "$PYTHON" scripts/add_source.py \
   --title 'Validation fixture' \
   --url 'https://example.org/validation-fixture' \
@@ -49,7 +49,7 @@ if "$PYTHON" scripts/add_source.py \
 fi
 grep -q 'already exists' "$TMP_DIR/duplicate.err"
 printf 'PASS: source add and duplicate rejection\n'
-printf '\n[5/10] Claim CLI source-link validation smoke test\n'
+printf '\n[5/11] Claim CLI source-link validation smoke test\n'
 "$PYTHON" scripts/add_claim.py --claim 'Validation claim' --status independent_reporting --source-url 'https://example.org/validation-fixture' --notes 'Synthetic fixture only.' --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" > /dev/null
 if "$PYTHON" scripts/add_claim.py --claim 'Unlinked claim' --status analysis --source-url 'https://example.org/missing' --notes 'Must fail.' --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" > /dev/null 2> "$TMP_DIR/claim.err"; then
   printf 'FAIL: claim with unknown source was accepted\n' >&2
@@ -57,13 +57,13 @@ if "$PYTHON" scripts/add_claim.py --claim 'Unlinked claim' --status analysis --s
 fi
 grep -q 'absent from the source ledger' "$TMP_DIR/claim.err"
 printf 'PASS: claim add and unknown-source rejection\n'
-printf '\n[6/10] Project package and release gate smoke test\n'
+printf '\n[6/11] Project package and release gate smoke test\n'
 "$PYTHON" scripts/validate_project.py --project data/projects/sample_project.json --sources-file "$TMP_DIR/empty-sources.json" --claims-file "$TMP_DIR/empty-claims.json" > "$TMP_DIR/project.json"
 grep -q '"structural_validation": "PASS"' "$TMP_DIR/project.json"
 grep -q '"publish_ready": false' "$TMP_DIR/project.json"
 grep -q 'Human approval missing' "$TMP_DIR/project.json"
 printf 'PASS: sample validates structurally and remains blocked from publishing\n'
-printf '\n[7/10] Subtitle parser and CLI smoke test\n'
+printf '\n[7/11] Subtitle parser and CLI smoke test\n'
 cat > "$TMP_DIR/captions.srt" <<'SRT'
 1
 00:00:00,000 --> 00:00:01,500
@@ -79,7 +79,7 @@ grep -q '"cue_count": 2' "$TMP_DIR/subtitles.json"
 printf 'PASS: SRT validation CLI\n'
 
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
-  printf '\n[8/10] Optional FFmpeg end-to-end smoke render\n'
+  printf '\n[8/11] Optional FFmpeg end-to-end smoke render\n'
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
   cat > "$TMP_DIR/render.srt" <<'SRT'
@@ -98,18 +98,50 @@ else
   printf '\nSKIP: FFmpeg integration render (ffmpeg and/or ffprobe not installed)\n'
 fi
 
-printf '\n[9/10] Cited draft generation smoke test\n'
+printf '\n[9/11] Cited draft generation smoke test\n'
 "$PYTHON" scripts/build_cited_draft.py --title 'Validation fixture documentary' --language en --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" --output "$TMP_DIR/draft.md" > "$TMP_DIR/draft.out"
 grep -q '\[\[claim:Validation claim\]\]' "$TMP_DIR/draft.md"
 grep -q 'https://example.org/validation-fixture' "$TMP_DIR/draft.md"
 grep -q 'HUMAN REVIEW REQUIRED' "$TMP_DIR/draft.out"
 printf 'PASS: generated draft includes tracked claim and source URL\n'
 
-printf '\n[10/10] Release metadata draft smoke test\n'
+printf '\n[10/11] Release metadata draft smoke test\n'
 "$PYTHON" scripts/build_release_metadata.py --project data/projects/sample_project.json --sources-file "$TMP_DIR/empty-sources.json" --claims-file "$TMP_DIR/empty-claims.json" --output "$TMP_DIR/metadata.json" > "$TMP_DIR/metadata.out"
 grep -q '"publish_ready": false' "$TMP_DIR/metadata.json"
 grep -q '"release_status": "draft_blocked"' "$TMP_DIR/metadata.json"
 grep -q 'never uploads or publishes' "$TMP_DIR/metadata.json"
 printf 'PASS: metadata is generated as blocked draft; no publishing action exists\n'
+
+printf '\n[11/11] End-to-end source-to-draft-to-release-check smoke test\n'
+"$PYTHON" - "$TMP_DIR/draft.md" "$TMP_DIR/e2e-project.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+draft_path, project_path = map(Path, sys.argv[1:3])
+project = {
+    "project_id": "synthetic-e2e-fixture",
+    "title": "Synthetic end-to-end fixture",
+    "language": "en",
+    "target_duration_seconds": 60,
+    "script": draft_path.read_text(encoding="utf-8"),
+    "claim_ids": ["Validation claim"],
+    "media_assets": [],
+    "approval": {
+        "script_reviewed": False,
+        "translation_reviewed": False,
+        "media_rights_reviewed": False,
+        "final_video_reviewed": False,
+        "approved_by": ""
+    }
+}
+project_path.write_text(json.dumps(project, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+PY
+"$PYTHON" scripts/validate_project.py --project "$TMP_DIR/e2e-project.json" --sources-file "$TMP_DIR/sources.json" --claims-file "$TMP_DIR/claims.json" > "$TMP_DIR/e2e-validation.json"
+grep -q '"structural_validation": "PASS"' "$TMP_DIR/e2e-validation.json"
+grep -q '"publish_ready": false' "$TMP_DIR/e2e-validation.json"
+"$PYTHON" scripts/build_release_metadata.py --project "$TMP_DIR/e2e-project.json" --sources-file "$TMP_DIR/sources.json" --claims-file "$TMP_DIR/claims.json" --output "$TMP_DIR/e2e-metadata.json" > "$TMP_DIR/e2e-metadata.out"
+grep -q 'https://example.org/validation-fixture' "$TMP_DIR/e2e-metadata.json"
+grep -q '"publish_ready": false' "$TMP_DIR/e2e-metadata.json"
+printf 'PASS: source -> claim -> cited draft -> project validator -> blocked metadata package\n'
 
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
