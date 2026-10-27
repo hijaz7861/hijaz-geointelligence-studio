@@ -4,6 +4,7 @@ This is a deterministic checklist, not a fact-checking or editorial judgment eng
 """
 from __future__ import annotations
 import json
+import re
 from pathlib import Path
 from typing import Any
 from app.research.claim_ledger import ClaimLedgerError, load_claims
@@ -29,6 +30,13 @@ def validate_project(project: dict[str, Any], claims: list[dict[str, Any]], sour
     known_claims = {c["claim"] for c in claims}
     missing_claims = [x for x in claim_ids if x not in known_claims]
     if missing_claims: raise ProjectValidationError("Project references claims absent from the claim ledger: " + "; ".join(missing_claims))
+    # Every factual paragraph must cite a tracked claim or be explicitly labelled editorial/structural.
+    for paragraph in (part.strip() for part in project["script"].split("\n\n") if part.strip()):
+        if paragraph.startswith(("#", "[EDITORIAL]", "[TRANSITION]", ">")): continue
+        markers = re.findall(r"\[\[claim:(.*?)\]\]", paragraph)
+        if not markers: raise ProjectValidationError("Script paragraph lacks a claim citation marker or an [EDITORIAL]/[TRANSITION] label.")
+        for marker in markers:
+            if marker not in claim_ids: raise ProjectValidationError(f"Script cites a claim not listed in project claim_ids: {marker}")
     assets = project["media_assets"]
     if not isinstance(assets, list): raise ProjectValidationError("media_assets must be a JSON array.")
     for index, asset in enumerate(assets):
