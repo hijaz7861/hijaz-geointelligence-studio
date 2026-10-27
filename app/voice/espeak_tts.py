@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import wave
 from pathlib import Path
 
 class NarrationError(RuntimeError):
@@ -62,6 +63,12 @@ def generate_narration(text: str, language: str, output_path: str | Path, *, ove
             raise NarrationError(f"eSpeak failed with exit code {result.returncode}: {detail}")
         if not temp_output.is_file() or temp_output.stat().st_size < 44:
             raise NarrationError("eSpeak returned success but did not create a valid-looking WAV file.")
+        try:
+            with wave.open(str(temp_output), "rb") as wav_file:
+                if wav_file.getnframes() <= 0 or wav_file.getframerate() <= 0 or wav_file.getnchannels() <= 0:
+                    raise NarrationError("eSpeak created a WAV file with invalid audio metadata.")
+        except (wave.Error, EOFError, OSError) as exc:
+            raise NarrationError(f"eSpeak output is not a valid WAV file: {exc}") from exc
         if output.exists() and not overwrite:
             raise NarrationError(f"Output appeared during generation; refusing to overwrite: {output}")
         temp_output.replace(output)
