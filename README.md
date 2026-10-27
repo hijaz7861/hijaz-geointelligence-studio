@@ -12,6 +12,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Validate documentary project structure and trace project claims and media-origin URLs.
 - Require every factual script paragraph to use a tracked `[[claim:Exact claim text]]` marker; clearly label non-factual framing as `[EDITORIAL]` or `[TRANSITION]`.
 - Generate a traceable Markdown draft from recorded claims and source URLs; drafts are explicitly marked for human review.
+- Check translated scripts for preserved claim markers and source URLs without pretending to evaluate linguistic quality.
 - Prepare a YouTube title/description/source metadata package that stays blocked until release requirements pass; no upload action is implemented.
 - Require media creator, attribution, usage scope, and rights-evidence notes.
 - Validate SRT subtitle sequence, timestamps, cue overlap, text presence, and line length with a local CLI.
@@ -59,6 +60,7 @@ The sample package is intentionally not approved for publishing. The validator c
 - [Claim ledger workflow](docs/claim-ledger.md)
 - [Documentary project schema and release gate](docs/documentary-project-schema.md)
 - [Cited draft generation](docs/cited-draft-generation.md)
+- [Translation traceability validation](docs/translation-validation.md)
 - [YouTube release metadata draft](docs/release-metadata.md)
 - [Local FFmpeg video assembly](docs/video-assembly.md)
 - [Offline narration generation and language limitations](docs/narration.md)
