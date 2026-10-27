@@ -224,7 +224,13 @@ grep -q '"Final rendered video is missing."' "$TMP_DIR/release-bundle.json"
 grep -q '"YouTube metadata draft is missing."' "$TMP_DIR/release-bundle.json"
 printf 'PASS: evidence bundle created and missing production evidence blocks release\n'
 
-printf '\n[19/19] Cinematic map scene validation and SVG smoke render\n'
+printf '\n[19/20] Cinematic map generator CLI smoke test\n'
+"$PYTHON" scripts/render_cinematic_map.py --help > "$TMP_DIR/cinematic-map-help.txt"
+grep -q -- '--scene' "$TMP_DIR/cinematic-map-help.txt"
+grep -q -- '--output' "$TMP_DIR/cinematic-map-help.txt"
+printf 'PASS: cinematic map CLI exposes scene and output arguments\n'
+
+printf '\n[20/20] Cinematic map scene validation and SVG smoke render\n'
 "$PYTHON" scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output "$TMP_DIR/cinematic-scene.svg" > "$TMP_DIR/cinematic-scene-result.json"
 grep -q '"status": "RENDERED_SVG"' "$TMP_DIR/cinematic-scene-result.json"
 grep -q 'animateMotion' "$TMP_DIR/cinematic-scene.svg"
