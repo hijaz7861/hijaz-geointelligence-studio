@@ -14,6 +14,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Prepare a YouTube title/description/source metadata package that stays blocked until release requirements pass; no upload action is implemented.
 - Require media creator, attribution, usage scope, and rights-evidence notes.
 - Validate SRT subtitle sequence, timestamps, cue overlap, text presence, and line length with a local CLI.
+- Generate optional offline eSpeak narration WAVs when the requested language voice is installed; missing voices fail explicitly rather than silently switching languages.
 - Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
 - Run repeatable local validation without consuming GitHub Actions minutes.
 
@@ -59,6 +60,7 @@ The sample package is intentionally not approved for publishing. The validator c
 - [Cited draft generation](docs/cited-draft-generation.md)
 - [YouTube release metadata draft](docs/release-metadata.md)
 - [Local FFmpeg video assembly](docs/video-assembly.md)
+- [Offline narration generation and language limitations](docs/narration.md)
 - [Editorial policy](docs/editorial-policy.md)
 - [Implementation roadmap and completion criteria](docs/roadmap.md)
 
