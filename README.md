@@ -8,6 +8,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 ## Current capabilities
 - Validate public-source metadata, publication dates, source categories, and duplicate URLs.
 - Track editorial claims and reject references to URLs absent from the source ledger.
+- Flag missing or single-domain independent corroboration as editorial warnings, not automated truth judgments.
 - Validate documentary project structure and trace project claims and media-origin URLs.
 - Require every factual script paragraph to use a tracked `[[claim:Exact claim text]]` marker; clearly label non-factual framing as `[EDITORIAL]` or `[TRANSITION]`.
 - Generate a traceable Markdown draft from recorded claims and source URLs; drafts are explicitly marked for human review.
