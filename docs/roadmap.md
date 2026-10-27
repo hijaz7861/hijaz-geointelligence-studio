@@ -23,7 +23,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [ ] Add Urdu and English workflow first, then Russian and Chinese translation with glossary consistency checks.
 
 ## Phase 3 — Media production
-- [ ] Expand the media manifest to include creator, license/permission evidence, attribution, usage scope, and expiry/review dates.
+- [x] Require creator, attribution, usage scope, and rights-evidence metadata for every media asset.
+- [ ] Add structured license/permission evidence URLs and expiry/review dates.
 - [x] Block media with unknown or restricted rights at the release checklist stage.
 - [ ] Build original graphics, timelines, maps, captions, and narration tracks.
 - [ ] Add an optional local FFmpeg assembly adapter with dependency detection and a small test fixture.
