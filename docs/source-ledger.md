@@ -7,12 +7,12 @@ The source ledger records source metadata locally. It is not an automated fact-v
 From the repository root:
 
 ```sh
-python scripts/add_source.py \\
-  --title "Example public report" \\
-  --url "https://example.org/report" \\
-  --published-at "2026-10-20" \\
-  --source-type independent_reporting \\
-  --claim-status independent_reporting \\
+python scripts/add_source.py \
+  --title "Example public report" \
+  --url "https://example.org/report" \
+  --published-at "2026-10-20" \
+  --source-type independent_reporting \
+  --claim-status independent_reporting \
   --notes "Example fixture only; replace with real source notes."
 ```
 
@@ -27,5 +27,5 @@ The default file is `data/sources/sources.json`; use `--ledger PATH` to test or 
 ## Test
 
 ```sh
-python -m unittest discover -s tests -v
+./scripts/validate.sh
 ```
