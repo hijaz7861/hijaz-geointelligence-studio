@@ -25,7 +25,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 ## Project layout
 - `app/research/` — source and claim ledgers
 - `app/editorial/` — documentary package validation and release checks
-- `app/video/` — planned video assembly and graphics
+- `app/video/` — FFmpeg muxing adapter; graphics generation remains planned
 - `app/voice/` — planned narration and subtitle workflows
 - `app/publishing/` — planned YouTube publishing preparation
 - `config/` — non-secret configuration
@@ -54,6 +54,7 @@ The sample package is intentionally not approved for publishing. The validator c
 ## Documentation
 - [Claim ledger workflow](docs/claim-ledger.md)
 - [Documentary project schema and release gate](docs/documentary-project-schema.md)
+- [Local FFmpeg video assembly](docs/video-assembly.md)
 - [Editorial policy](docs/editorial-policy.md)
 - [Implementation roadmap and completion criteria](docs/roadmap.md)
 
