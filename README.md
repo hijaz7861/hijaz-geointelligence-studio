@@ -22,7 +22,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Generate optional offline eSpeak narration WAVs when the requested language voice is installed; missing voices fail explicitly rather than silently switching languages.
 - Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
 - Build a deterministic release evidence bundle with SHA-256 input hashes, claim/source traceability, media-rights metadata, render/subtitle checks, approval records, and fail-closed release blockers.
-- Run repeatable local validation without consuming GitHub Actions minutes.
+- Generate a first-stage animated SVG route scene from a validated JSON plan; this is a schematic preview, not yet a licensed geographic basemap or finished MP4 animation.\n- Run repeatable local validation without consuming GitHub Actions minutes.
 
 ## Editorial and safety rules
 - Use public, non-operational information; do not generate real-time targeting or attack-optimization guidance.
@@ -68,7 +68,7 @@ The sample package is intentionally not approved for publishing. The validator c
 - [Translation traceability validation](docs/translation-validation.md)
 - [Read-only local dashboard](docs/dashboard.md)
 - [YouTube release metadata draft](docs/release-metadata.md)
-- [Local FFmpeg video assembly](docs/video-assembly.md)
+- [Cinematic map generator (initial SVG stage)](docs/cinematic-map-generator.md)\n- [Local FFmpeg video assembly](docs/video-assembly.md)
 - [Rendered-video technical validation](docs/render-validation.md)
 - [Release evidence bundle](docs/release-evidence-bundle.md)
 - [Offline narration generation and language limitations](docs/narration.md)
