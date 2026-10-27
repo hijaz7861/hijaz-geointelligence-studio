@@ -22,7 +22,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [ ] Generate polished narration from research inputs and stable claim IDs/source URLs, with citation-preserving editorial review.
 - [ ] Validate unsupported statements, contradictory dates, and uncited factual paragraphs.
 - [ ] Create a human-readable fact-check report distinguishing facts, attributed claims, analysis, and unresolved questions.
-- [ ] Add Urdu and English workflow first, then Russian and Chinese translation with glossary consistency checks.
+- [x] Add a structural translation validator that ensures claim markers and source URLs remain unchanged and in order.
+- [ ] Add Urdu and English workflow first, then Russian and Chinese translation with glossary consistency checks and human linguistic review.
 
 ## Phase 3 — Media production
 - [x] Require creator, attribution, usage scope, and rights-evidence metadata for every media asset.
