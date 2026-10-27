@@ -38,8 +38,8 @@ def validate_scene(scene):
         raise CinematicMapError("entities must be a non-empty list.")
     ids = set()
     for entity in entities:
-        if not isinstance(entity, dict) or not entity.get("id") or not entity.get("label"):
-            raise CinematicMapError("Each entity needs id and label.")
+        if not isinstance(entity, dict) or not isinstance(entity.get("id"), str) or not entity["id"].strip() or not isinstance(entity.get("label"), str) or not entity["label"].strip():
+            raise CinematicMapError("Each entity needs non-empty string id and label.")
         if entity["id"] in ids:
             raise CinematicMapError(f"Duplicate entity id: {entity['id']}")
         ids.add(entity["id"])
@@ -47,6 +47,8 @@ def validate_scene(scene):
         if not isinstance(scene[group], list):
             raise CinematicMapError(f"{group} must be a list.")
     for route in scene["routes"]:
+        if not isinstance(route, dict):
+            raise CinematicMapError("Each route must be an object.")
         if route.get("entity_id") not in ids:
             raise CinematicMapError("Route references an unknown entity.")
         points = route.get("points")
@@ -54,6 +56,8 @@ def validate_scene(scene):
             raise CinematicMapError("Each route needs at least two points.")
         last_t = -1
         for point in points:
+            if not isinstance(point, dict):
+                raise CinematicMapError("Each route point must be an object.")
             t = _number(point.get("t"), "route point t")
             lon, lat = _number(point.get("lon"), "route point lon"), _number(point.get("lat"), "route point lat")
             if not 0 <= t <= duration or t < last_t:
@@ -64,9 +68,13 @@ def validate_scene(scene):
         if not route.get("illustrative", False) and not route.get("source_refs"):
             raise CinematicMapError("Factual routes require source_refs; mark reconstructions illustrative.")
     for event in scene["events"]:
+        if not isinstance(event, dict):
+            raise CinematicMapError("Each event must be an object.")
         t = _number(event.get("t"), "event t")
         if not 0 <= t <= duration or not event.get("label"):
             raise CinematicMapError("Event timestamp or label is invalid.")
+        if ("lon" in event) != ("lat" in event):
+            raise CinematicMapError("Events must provide both lon and lat, or neither.")
         if "lon" in event and "lat" in event:
             lon, lat = _number(event["lon"], "event lon"), _number(event["lat"], "event lat")
             if not west <= lon <= east or not south <= lat <= north:
