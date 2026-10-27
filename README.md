@@ -36,7 +36,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - `app/editorial/` — documentary package validation and release checks
 - `app/video/` — FFmpeg muxing adapter; graphics generation remains planned
 - `app/voice/` — SRT validation and optional offline eSpeak narration
-- `app/publishing/` — planned YouTube publishing preparation
+- `app/publishing/` — YouTube metadata drafts and release evidence bundles; publishing/upload remains unimplemented
 - `config/` — non-secret configuration
 - `data/` — local research records and drafts
 - `docs/` — policy, schema, and roadmap
