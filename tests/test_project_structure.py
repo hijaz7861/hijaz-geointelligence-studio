@@ -38,6 +38,7 @@ class ProjectStructureTests(unittest.TestCase):
             "validate_translation.py",
             "run_dashboard.py",
             "validate_render.py",
+            "import_feeds.py",
         ):
             with self.subTest(script=name):
                 self.assertTrue((ROOT / "scripts" / name).is_file())
