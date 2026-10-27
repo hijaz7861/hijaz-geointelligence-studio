@@ -6,19 +6,20 @@ cd "$ROOT_DIR"
 PYTHON=${PYTHON:-python3}
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT HUP INT TERM
-
-printf '\n[1/5] Unit tests\n'
+printf '\n[1/6] Unit tests\n'
 "$PYTHON" -m unittest discover -s tests -v
-printf '\n[2/5] Syntax compilation\n'
+printf '\n[2/6] Syntax compilation\n'
 "$PYTHON" -m compileall -q app scripts tests
 printf 'PASS: compileall\n'
-printf '\n[3/5] CLI help\n'
+printf '\n[3/6] CLI help\n'
 "$PYTHON" scripts/add_source.py --help > "$TMP_DIR/help.txt"
 grep -q -- '--published-at' "$TMP_DIR/help.txt"
 "$PYTHON" scripts/add_claim.py --help > "$TMP_DIR/claim-help.txt"
 grep -q -- '--source-url' "$TMP_DIR/claim-help.txt"
-printf 'PASS: both CLI help screens\n'
-printf '\n[4/5] Source CLI add + duplicate rejection smoke test\n'
+"$PYTHON" scripts/validate_project.py --help > "$TMP_DIR/project-help.txt"
+grep -q -- '--project' "$TMP_DIR/project-help.txt"
+printf 'PASS: all CLI help screens\n'
+printf '\n[4/6] Source CLI add + duplicate rejection smoke test\n'
 "$PYTHON" scripts/add_source.py \
   --title 'Validation fixture' \
   --url 'https://example.org/validation-fixture' \
@@ -40,7 +41,7 @@ if "$PYTHON" scripts/add_source.py \
 fi
 grep -q 'already exists' "$TMP_DIR/duplicate.err"
 printf 'PASS: source add and duplicate rejection\n'
-printf '\n[5/5] Claim CLI source-link validation smoke test\n'
+printf '\n[5/6] Claim CLI source-link validation smoke test\n'
 "$PYTHON" scripts/add_claim.py --claim 'Validation claim' --status independent_reporting --source-url 'https://example.org/validation-fixture' --notes 'Synthetic fixture only.' --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" > /dev/null
 if "$PYTHON" scripts/add_claim.py --claim 'Unlinked claim' --status analysis --source-url 'https://example.org/missing' --notes 'Must fail.' --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" > /dev/null 2> "$TMP_DIR/claim.err"; then
   printf 'FAIL: claim with unknown source was accepted\n' >&2
@@ -48,4 +49,10 @@ if "$PYTHON" scripts/add_claim.py --claim 'Unlinked claim' --status analysis --s
 fi
 grep -q 'absent from the source ledger' "$TMP_DIR/claim.err"
 printf 'PASS: claim add and unknown-source rejection\n'
+printf '\n[6/6] Project package and release gate smoke test\n'
+"$PYTHON" scripts/validate_project.py --project data/projects/sample_project.json --sources-file "$TMP_DIR/empty-sources.json" --claims-file "$TMP_DIR/empty-claims.json" > "$TMP_DIR/project.json"
+grep -q '"structural_validation": "PASS"' "$TMP_DIR/project.json"
+grep -q '"publish_ready": false' "$TMP_DIR/project.json"
+grep -q 'Human approval missing' "$TMP_DIR/project.json"
+printf 'PASS: sample validates structurally and remains blocked from publishing\n'
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
