@@ -36,7 +36,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Add an optional local FFmpeg adapter to mux existing video, narration, and selectable SRT subtitle streams; test command safety and failure handling.
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
-- [ ] Verify subtitle-to-audio synchronization, audio duration, output resolution, and render errors.
+- [x] Validate rendered output for video/audio/subtitle streams, positive duration, and minimum configured resolution using ffprobe.
+- [ ] Verify subtitle-to-audio synchronization, audio quality/levels, and render errors.
 - [ ] Add original graphics/timeline generation and a complete sample documentary render from a cited script.
 
 ## Phase 4 — Release safety and YouTube preparation
