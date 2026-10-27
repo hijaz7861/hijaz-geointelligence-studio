@@ -1,6 +1,6 @@
 # YouTube release metadata draft
 
-Generate a JSON package containing a title, a source-attributed description, language, target duration, used source URLs, and release blockers:
+Generate a JSON package containing a title, a source-attributed description, language, target duration, used source URLs, corroboration warnings, and release blockers:
 
 ```sh
 python scripts/build_release_metadata.py \
