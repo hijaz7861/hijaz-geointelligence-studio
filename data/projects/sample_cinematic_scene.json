@@ -1,0 +1,51 @@
+{
+  "scene_id": "sample-historical-route",
+  "title": "Historical Route — Illustrative Preview",
+  "mode": "educational",
+  "duration_seconds": 20,
+  "map": {
+    "west": 30,
+    "east": 70,
+    "south": 5,
+    "north": 40
+  },
+  "entities": [
+    {
+      "id": "aircraft-1",
+      "label": "Aircraft (illustrative)"
+    }
+  ],
+  "routes": [
+    {
+      "entity_id": "aircraft-1",
+      "illustrative": true,
+      "points": [
+        {
+          "t": 0,
+          "lon": 35,
+          "lat": 15
+        },
+        {
+          "t": 8,
+          "lon": 48,
+          "lat": 28
+        },
+        {
+          "t": 20,
+          "lon": 62,
+          "lat": 18
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "t": 8,
+      "lon": 48,
+      "lat": 28,
+      "label": "Illustrative event",
+      "illustrative": true
+    }
+  ],
+  "disclaimer": "Illustrative training scene. Not a factual event or real route."
+}
