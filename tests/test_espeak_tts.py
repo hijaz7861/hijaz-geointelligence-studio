@@ -1,4 +1,5 @@
 import tempfile
+import wave
 import unittest
 from pathlib import Path
 from unittest.mock import patch, Mock
@@ -23,7 +24,8 @@ class EspeakTtsTests(unittest.TestCase):
  def test_generates_transactionally_and_uses_stdin(self,run,which):
   def fake_run(command,**kwargs):
    if command[1]=='--voices': return Mock(returncode=0,stdout='Pty Language Age/Gender VoiceName File\n 5 en M default default\n',stderr='')
-   Path(command[command.index('-w')+1]).write_bytes(b'RIFF'+b'0'*50)
+   with wave.open(command[command.index('-w')+1],'wb') as wav_file:
+    wav_file.setnchannels(1); wav_file.setsampwidth(2); wav_file.setframerate(22050); wav_file.writeframes(b'\x00\x00'*220)
    return Mock(returncode=0,stdout='',stderr='')
   run.side_effect=fake_run
   result=generate_narration('Hello world','en',self.out)
