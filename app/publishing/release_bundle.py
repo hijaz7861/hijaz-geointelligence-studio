@@ -48,7 +48,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     for asset in project.get("media_assets",[]):
         rights=asset.get("rights_status")
         media_evidence.append({"asset_id":asset.get("asset_id"),"origin_url":asset.get("origin_url"),"rights_status":rights,"creator":asset.get("creator"),"attribution":asset.get("attribution"),"usage_scope":asset.get("usage_scope"),"rights_evidence":asset.get("rights_evidence"),"notes":asset.get("notes")})
-        if rights in {"licensed","permission_granted","public_domain_verified"}:
+        if rights in {"licensed","permission_granted","public_domain_verified","original"}:
             if not str(asset.get("rights_evidence","")).strip(): blockers.append(f"Media asset {asset.get('asset_id')} has no rights evidence text.")
             evidence_text = str(asset.get("rights_evidence","")).strip().lower()
             placeholder_terms = ("synthetic", "fixture", "placeholder", "unknown", "n/a", "not a real license", "not verified", "none")
