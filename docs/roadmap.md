@@ -17,7 +17,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Reject media assets whose origin URL is absent from the source ledger.
 - [x] Add release blockers for unverified claims, unknown/restricted media rights, and missing human approvals.
 - [x] Require each non-editorial script paragraph to cite a tracked claim marker and reject citations absent from the project's claim list.
-- [ ] Generate full script drafts from research inputs and stable claim IDs/source URLs.
+- [x] Generate a traceable Markdown draft from recorded claim text, evidence labels, and source URLs; require human rewrite/review.
+- [ ] Generate polished narration from research inputs and stable claim IDs/source URLs, with citation-preserving editorial review.
 - [ ] Validate unsupported statements, contradictory dates, and uncited factual paragraphs.
 - [ ] Create a human-readable fact-check report distinguishing facts, attributed claims, analysis, and unresolved questions.
 - [ ] Add Urdu and English workflow first, then Russian and Chinese translation with glossary consistency checks.
