@@ -41,7 +41,7 @@ def validate_project(project: dict[str, Any], claims: list[dict[str, Any]], sour
     if not isinstance(assets, list): raise ProjectValidationError("media_assets must be a JSON array.")
     for index, asset in enumerate(assets):
         if not isinstance(asset, dict): raise ProjectValidationError(f"media_assets[{index}] must be an object.")
-        for key in ("asset_id", "origin_url", "rights_status", "creator", "attribution", "usage_scope", "rights_evidence", "notes":
+        for key in ("asset_id", "origin_url", "rights_status", "creator", "attribution", "usage_scope", "rights_evidence", "notes"):
             if not isinstance(asset.get(key), str) or not asset[key].strip(): raise ProjectValidationError(f"media_assets[{index}].{key} must be a non-empty string.")
         if asset["origin_url"] not in source_urls: raise ProjectValidationError(f"Media asset origin URL is not in source ledger: {asset['origin_url']}")
         if asset["rights_status"] not in {"licensed", "permission_granted", "public_domain_verified", "original", "unknown", "restricted"}: raise ProjectValidationError(f"Unsupported rights_status for media_assets[{index}].")
