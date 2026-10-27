@@ -44,6 +44,26 @@ class CinematicMapTests(unittest.TestCase):
         scene["routes"][0]["points"][2]["t"] = 5
         with self.assertRaisesRegex(CinematicMapError, "timestamps must be ordered"):
             validate_scene(scene)
+    def test_rejects_non_object_route_cleanly(self):
+        scene = fixture()
+        scene["routes"][0] = None
+        with self.assertRaisesRegex(CinematicMapError, "route must be an object"):
+            validate_scene(scene)
+    def test_rejects_non_object_route_point_cleanly(self):
+        scene = fixture()
+        scene["routes"][0]["points"][0] = None
+        with self.assertRaisesRegex(CinematicMapError, "route point must be an object"):
+            validate_scene(scene)
+    def test_rejects_non_object_event_cleanly(self):
+        scene = fixture()
+        scene["events"][0] = None
+        with self.assertRaisesRegex(CinematicMapError, "event must be an object"):
+            validate_scene(scene)
+    def test_rejects_partial_event_coordinate(self):
+        scene = fixture()
+        scene["events"][0].pop("lat")
+        with self.assertRaisesRegex(CinematicMapError, "both lon and lat"):
+            validate_scene(scene)
     def test_does_not_overwrite_without_permission(self):
         with tempfile.TemporaryDirectory() as tmp:
             output = Path(tmp) / "scene.svg"
