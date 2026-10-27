@@ -77,3 +77,7 @@ The sample package is intentionally not approved for publishing. The validator c
 
 ## Completion status
 This is an evolving MVP, not a completed production video-automation system. Completion requires a reproducible end-to-end sample from source research through reviewed script, rights-cleared assets, subtitles/narration, rendered video, and human approval. See the roadmap for remaining work.
+
+## Project ownership
+
+Project owner and maintainer: **Muhammad Naeem Khan** (`hijaz7861`).
