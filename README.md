@@ -21,6 +21,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Inspect rendered MP4 streams, duration, and resolution with `ffprobe` before editorial release review.
 - Generate optional offline eSpeak narration WAVs when the requested language voice is installed; missing voices fail explicitly rather than silently switching languages.
 - Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
+- Build a deterministic release evidence bundle with SHA-256 input hashes, claim/source traceability, media-rights metadata, render/subtitle checks, approval records, and fail-closed release blockers.
 - Run repeatable local validation without consuming GitHub Actions minutes.
 
 ## Editorial and safety rules
