@@ -7,6 +7,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 
 ## Current capabilities
 - Validate public-source metadata, publication dates, source categories, and duplicate URLs.
+- Import RSS/Atom discovery metadata from explicitly configured HTTPS feeds with size/time limits and private-network protections.
 - Track editorial claims and reject references to URLs absent from the source ledger.
 - Flag missing or single-domain independent corroboration as editorial warnings, not automated truth judgments.
 - Validate documentary project structure and trace project claims and media-origin URLs.
@@ -60,6 +61,7 @@ The sample package is intentionally not approved for publishing. The validator c
 
 ## Documentation
 - [Claim ledger workflow](docs/claim-ledger.md)
+- [Safe RSS/Atom feed importer](docs/feed-importer.md)
 - [Documentary project schema and release gate](docs/documentary-project-schema.md)
 - [Cited draft generation](docs/cited-draft-generation.md)
 - [Translation traceability validation](docs/translation-validation.md)
