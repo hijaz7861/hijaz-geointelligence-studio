@@ -11,6 +11,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Validate documentary project structure and trace project claims and media-origin URLs.
 - Require every factual script paragraph to use a tracked `[[claim:Exact claim text]]` marker; clearly label non-factual framing as `[EDITORIAL]` or `[TRANSITION]`.
 - Require media creator, attribution, usage scope, and rights-evidence notes.
+- Validate SRT subtitle sequence, timestamps, cue overlap, text presence, and line length with a local CLI.
 - Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
 - Run repeatable local validation without consuming GitHub Actions minutes.
 
