@@ -38,6 +38,11 @@ class ReleaseBundleTests(unittest.TestCase):
   self.project.write_text(json.dumps(project),encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertTrue(any('placeholder or requires manual verification' in item for item in bundle['release_blockers']))
+ def test_original_media_with_placeholder_rights_evidence_is_a_blocker(self):
+  project={**PROJECT,"media_assets":[{**PROJECT["media_assets"][0],"rights_status":"original","rights_evidence":"Fixture only"}]}
+  self.project.write_text(json.dumps(project),encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  self.assertTrue(any('placeholder or requires manual verification' in item for item in bundle['release_blockers']))
  def test_non_object_metadata_is_a_blocker_not_a_crash(self):
   self.metadata.write_text('[]',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,metadata_path=self.metadata)
