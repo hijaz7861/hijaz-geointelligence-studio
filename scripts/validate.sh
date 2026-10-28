@@ -239,11 +239,11 @@ grep -q 'animateMotion' "$TMP_DIR/cinematic-scene.svg"
 grep -q 'ILLUSTRATIVE' "$TMP_DIR/cinematic-scene.svg"
 printf 'PASS: schematic route animation generated; geographic basemap and MP4 render remain future stages\n'
 
-printf '\\n[21/21] Editorial fact-check report smoke test\\n'
+printf '\n[21/21] Editorial fact-check report smoke test\\n'
 "$PYTHON" scripts/build_fact_check_report.py --claims-file data/sources/claims.json --sources-file data/sources/sources.json --output "$TMP_DIR/fact-check-report.md" > "$TMP_DIR/fact-check-report-result.txt"
 grep -q 'does not establish truth' "$TMP_DIR/fact-check-report.md"
 grep -q 'Human review checklist' "$TMP_DIR/fact-check-report.md"
 grep -q 'FACT-CHECK REPORT CREATED' "$TMP_DIR/fact-check-report-result.txt"
-printf 'PASS: fact-check report includes source traceability, warnings, and human review checklist\\n'
+printf 'PASS: fact-check report includes source traceability, warnings, and human review checklist\n'
 
-printf '\\nALL LOCAL VALIDATION CHECKS PASSED\\n'
+printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
