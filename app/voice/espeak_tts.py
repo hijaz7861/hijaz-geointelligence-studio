@@ -10,7 +10,7 @@ from pathlib import Path
 class NarrationError(RuntimeError):
     """Raised when a requested offline voice is unavailable or generation fails."""
 
-LANGUAGE_VOICES = {"en": "en", "ur": "ur", "ru": "ru", "zh": "zh"}
+LANGUAGE_VOICES = {"en": ("en", "en-us", "en-gb"), "ur": ("ur",), "ru": ("ru",), "zh": ("zh", "cmn")}
 
 def available_voices(executable: str | None = None, timeout_seconds: int = 15) -> set[str]:
     binary = executable or shutil.which("espeak-ng") or shutil.which("espeak")
@@ -44,9 +44,10 @@ def generate_narration(text: str, language: str, output_path: str | Path, *, ove
     if not binary:
         raise NarrationError("Neither espeak-ng nor espeak was found on PATH.")
     voices = available_voices(binary, min(timeout_seconds, 15))
-    voice = LANGUAGE_VOICES[language]
-    if voice not in voices:
-        raise NarrationError(f"Requested language voice '{voice}' is not installed. Available voices include: {', '.join(sorted(voices)[:20])}")
+    voice_candidates = LANGUAGE_VOICES[language]
+    voice = next((candidate for candidate in voice_candidates if candidate in voices), None)
+    if voice is None:
+        raise NarrationError(f"Requested language voice '{language}' is not installed. Available voices include: {', '.join(sorted(voices)[:20])}")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists() and not overwrite:
         raise NarrationError(f"Output already exists (pass overwrite=True to replace): {output}")
