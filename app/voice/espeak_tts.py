@@ -36,6 +36,10 @@ def generate_narration(text: str, language: str, output_path: str | Path, *, ove
         raise NarrationError("language must be one of: en, ur, ru, zh.")
     if timeout_seconds < 1:
         raise NarrationError("timeout_seconds must be positive.")
+    # Validate deterministic caller input before checking optional host tools.
+    output = Path(output_path).expanduser().resolve()
+    if output.suffix.lower() != ".wav":
+        raise NarrationError("Output file must use the .wav extension.")
     binary = shutil.which("espeak-ng") or shutil.which("espeak")
     if not binary:
         raise NarrationError("Neither espeak-ng nor espeak was found on PATH.")
@@ -43,9 +47,6 @@ def generate_narration(text: str, language: str, output_path: str | Path, *, ove
     voice = LANGUAGE_VOICES[language]
     if voice not in voices:
         raise NarrationError(f"Requested language voice '{voice}' is not installed. Available voices include: {', '.join(sorted(voices)[:20])}")
-    output = Path(output_path).expanduser().resolve()
-    if output.suffix.lower() != ".wav":
-        raise NarrationError("Output file must use the .wav extension.")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists() and not overwrite:
         raise NarrationError(f"Output already exists (pass overwrite=True to replace): {output}")
