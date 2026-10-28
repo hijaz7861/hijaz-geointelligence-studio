@@ -23,7 +23,7 @@ class EspeakTtsTests(unittest.TestCase):
  @patch('app.voice.espeak_tts.subprocess.run')
  def test_generates_transactionally_and_uses_stdin(self,run,which):
   def fake_run(command,**kwargs):
-   if command[1]=='--voices': return Mock(returncode=0,stdout='Pty Language Age/Gender VoiceName File\n 5 en M default default\n',stderr='')
+   if command[1]=='--voices': return Mock(returncode=0,stdout='Pty Language Age/Gender VoiceName File\n 5 en-us M default default\n',stderr='')
    with wave.open(command[command.index('-w')+1],'wb') as wav_file:
     wav_file.setnchannels(1); wav_file.setsampwidth(2); wav_file.setframerate(22050); wav_file.writeframes(b'\x00\x00'*220)
    return Mock(returncode=0,stdout='',stderr='')
