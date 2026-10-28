@@ -1,0 +1,35 @@
+name: Repository validation
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "tests/**"
+      - "scripts/**"
+      - "data/**"
+      - "docs/**"
+      - ".github/workflows/validate.yml"
+      - "README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Full local validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run repository validation suite
+        run: bash scripts/validate.sh
