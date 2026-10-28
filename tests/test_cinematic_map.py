@@ -100,5 +100,26 @@ class CinematicMapTests(unittest.TestCase):
         with self.assertRaisesRegex(CinematicMapError, "title must be a non-empty string"):
             validate_scene(scene)
 
+
+    def test_factual_route_rejects_empty_source_refs(self):
+        scene = fixture()
+        scene["routes"][0]["illustrative"] = False
+        scene["routes"][0]["source_refs"] = []
+        with self.assertRaisesRegex(CinematicMapError, "source_refs must be a non-empty list"):
+            validate_scene(scene)
+
+    def test_factual_route_rejects_blank_source_ref(self):
+        scene = fixture()
+        scene["routes"][0]["illustrative"] = False
+        scene["routes"][0]["source_refs"] = ["   "]
+        with self.assertRaisesRegex(CinematicMapError, "source_refs must be a non-empty list"):
+            validate_scene(scene)
+
+    def test_rejects_non_boolean_event_illustrative_flag(self):
+        scene = fixture()
+        scene["events"][0]["illustrative"] = "false"
+        with self.assertRaisesRegex(CinematicMapError, "illustrative must be a boolean"):
+            validate_scene(scene)
+
 if __name__ == "__main__":
     unittest.main()
