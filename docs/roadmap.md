@@ -45,7 +45,7 @@ This repository is an evolving MVP, not a completed production system. A phase i
 ## Phase 4 — Release safety and YouTube preparation
 - [x] Add human-approval flags for script, translation, media rights, and final video review.
 - [x] Generate a source-attributed YouTube title/description metadata draft with explicit release blockers and no upload action.
-- [ ] Add and locally verify a deterministic release evidence bundle with input SHA-256 hashes, claim/source mapping, rights metadata, render/subtitle checks, human-approval record, and explicit blockers (implementation committed; local test execution still pending).
+- [x] Add a deterministic release evidence bundle with input SHA-256 hashes, claim/source mapping, rights metadata, render/subtitle checks, human-approval record, and explicit blockers; repository validation and evidence-bundle smoke test passed in GitHub Actions on 2026-10-28.
 - [ ] Extend release evidence bundle with verified license URLs/expiry dates, thumbnail evidence, audio-sync metrics, and a signed approval record.
 - [ ] Prepare metadata and upload package; do not publish automatically by default.
 - [ ] If YouTube API upload is later added, use least-privilege OAuth, secret-free logs, private/draft default, and a clear approval gate.
