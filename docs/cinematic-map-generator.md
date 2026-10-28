@@ -48,13 +48,14 @@ Create a repeatable, local-first visual-production component for historical and 
 - Stage C: MP4 renderer integration and stream/frame validation.
 - Stage D: editorial preview/review UI and evidence-bundle integration.
 
-## Current implementation status (branch: feature/cinematic-map-generator)
+## Current implementation status (main)
 - [x] Initial Python scene validator and deterministic SVG animation CLI.
 - [x] Illustrative sample scene and unit tests for bounds, references, timestamps, and overwrite protection.
-- [ ] Local execution of the new tests and smoke render has not yet been verified.
-- [ ] Licensed geographic basemap, camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and MP4 renderer integration remain unimplemented.
+- [x] CI execution verified on 2026-10-28: 126 unit tests and all 20 repository validation stages passed in GitHub Actions.
+- [ ] Licensed geographic basemap, camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and cinematic-map MP4 renderer integration remain unimplemented.
+- [ ] A source-grounded, human-reviewed geographic sample still needs to be rendered and inspected.
 
-The current renderer is an initial schematic graticule preview, not a complete cinematic map product. It must not be described as production-ready until local validation and an inspected real sample render pass.
+The current renderer is an initial schematic graticule preview, not a complete cinematic map product. A passing CI run verifies the scripted checks, but does not make the cinematic map feature production-ready.
 
 
 ## Validation hardening note
