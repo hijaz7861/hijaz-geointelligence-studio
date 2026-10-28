@@ -55,3 +55,8 @@ Create a repeatable, local-first visual-production component for historical and 
 - [ ] Licensed geographic basemap, camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and MP4 renderer integration remain unimplemented.
 
 The current renderer is an initial schematic graticule preview, not a complete cinematic map product. It must not be described as production-ready until local validation and an inspected real sample render pass.
+
+
+## Validation hardening note
+
+The validator treats `illustrative` as a JSON boolean only; strings such as `"false"`, numbers, and null are invalid. If a route or event is factual (`illustrative: false`, or the flag is omitted), `source_refs` must be a non-empty JSON array of non-empty strings. Each reference should be a stable claim ID or a source URL recorded in the research ledger. This is structural validation only: it does not fetch URLs, assess source quality, or independently verify a claim. Human source review remains mandatory.
