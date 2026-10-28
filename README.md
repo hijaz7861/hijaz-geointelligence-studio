@@ -13,6 +13,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Validate documentary project structure and trace project claims and media-origin URLs.
 - Require every factual script paragraph to use a tracked `[[claim:Exact claim text]]` marker; clearly label non-factual framing as `[EDITORIAL]` or `[TRANSITION]`.
 - Generate a traceable Markdown draft from recorded claims and source URLs; drafts are explicitly marked for human review.
+- Generate a human-readable fact-check report with claim statuses, linked source metadata, and corroboration warnings; report output requires human source review and does not claim to establish truth.
 - Check translated scripts for preserved claim markers and source URLs without pretending to evaluate linguistic quality.
 - Prepare a YouTube title/description/source metadata package that stays blocked until release requirements pass; no upload action is implemented.
 - View local source, claim, corroboration, and release-blocker status in a read-only loopback dashboard.
