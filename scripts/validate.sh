@@ -6,12 +6,12 @@ cd "$ROOT_DIR"
 PYTHON=${PYTHON:-python3}
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT HUP INT TERM
-printf '\n[1/20] Unit tests\n'
+printf '\n[1/21] Unit tests\n'
 "$PYTHON" -m unittest discover -s tests -v
-printf '\n[2/20] Syntax compilation\n'
+printf '\n[2/21] Syntax compilation\n'
 "$PYTHON" -m compileall -q app scripts tests
 printf 'PASS: compileall\n'
-printf '\n[3/20] CLI help\n'
+printf '\n[3/21] CLI help\n'
 "$PYTHON" scripts/add_source.py --help > "$TMP_DIR/help.txt"
 grep -q -- '--published-at' "$TMP_DIR/help.txt"
 "$PYTHON" scripts/add_claim.py --help > "$TMP_DIR/claim-help.txt"
@@ -41,7 +41,7 @@ grep -q -- '--max-items-per-feed' "$TMP_DIR/feed-help.txt"
 "$PYTHON" scripts/build_release_bundle.py --help > "$TMP_DIR/release-bundle-help.txt"
 grep -q -- '--subtitles' "$TMP_DIR/release-bundle-help.txt"
 printf 'PASS: all CLI help screens\n'
-printf '\n[4/20] Source CLI add + duplicate rejection smoke test\n'
+printf '\n[4/21] Source CLI add + duplicate rejection smoke test\n'
 "$PYTHON" scripts/add_source.py \
   --title 'Validation fixture' \
   --url 'https://example.org/validation-fixture' \
@@ -63,7 +63,7 @@ if "$PYTHON" scripts/add_source.py \
 fi
 grep -q 'already exists' "$TMP_DIR/duplicate.err"
 printf 'PASS: source add and duplicate rejection\n'
-printf '\n[5/20] Claim CLI source-link validation smoke test\n'
+printf '\n[5/21] Claim CLI source-link validation smoke test\n'
 "$PYTHON" scripts/add_claim.py --claim 'Validation claim' --status independent_reporting --source-url 'https://example.org/validation-fixture' --notes 'Synthetic fixture only.' --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" > /dev/null
 if "$PYTHON" scripts/add_claim.py --claim 'Unlinked claim' --status analysis --source-url 'https://example.org/missing' --notes 'Must fail.' --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" > /dev/null 2> "$TMP_DIR/claim.err"; then
   printf 'FAIL: claim with unknown source was accepted\n' >&2
@@ -71,13 +71,13 @@ if "$PYTHON" scripts/add_claim.py --claim 'Unlinked claim' --status analysis --s
 fi
 grep -q 'absent from the source ledger' "$TMP_DIR/claim.err"
 printf 'PASS: claim add and unknown-source rejection\n'
-printf '\n[6/20] Project package and release gate smoke test\n'
+printf '\n[6/21] Project package and release gate smoke test\n'
 "$PYTHON" scripts/validate_project.py --project data/projects/sample_project.json --sources-file "$TMP_DIR/empty-sources.json" --claims-file "$TMP_DIR/empty-claims.json" > "$TMP_DIR/project.json"
 grep -q '"structural_validation": "PASS"' "$TMP_DIR/project.json"
 grep -q '"publish_ready": false' "$TMP_DIR/project.json"
 grep -q 'Human approval missing' "$TMP_DIR/project.json"
 printf 'PASS: sample validates structurally and remains blocked from publishing\n'
-printf '\n[7/20] Subtitle parser and CLI smoke test\n'
+printf '\n[7/21] Subtitle parser and CLI smoke test\n'
 cat > "$TMP_DIR/captions.srt" <<'SRT'
 1
 00:00:00,000 --> 00:00:01,500
@@ -93,7 +93,7 @@ grep -q '"cue_count": 2' "$TMP_DIR/subtitles.json"
 printf 'PASS: SRT validation CLI\n'
 
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
-  printf '\n[8/20] Optional FFmpeg end-to-end smoke render\n'
+  printf '\n[8/21] Optional FFmpeg end-to-end smoke render\n'
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
   cat > "$TMP_DIR/render.srt" <<'SRT'
@@ -114,21 +114,21 @@ else
   printf '\nSKIP: FFmpeg integration render (ffmpeg and/or ffprobe not installed)\n'
 fi
 
-printf '\n[9/20] Cited draft generation smoke test\n'
+printf '\n[9/21] Cited draft generation smoke test\n'
 "$PYTHON" scripts/build_cited_draft.py --title 'Validation fixture documentary' --language en --claims-file "$TMP_DIR/claims.json" --sources-file "$TMP_DIR/sources.json" --output "$TMP_DIR/draft.md" > "$TMP_DIR/draft.out"
 grep -q '\[\[claim:Validation claim\]\]' "$TMP_DIR/draft.md"
 grep -q 'https://example.org/validation-fixture' "$TMP_DIR/draft.md"
 grep -q 'HUMAN REVIEW REQUIRED' "$TMP_DIR/draft.out"
 printf 'PASS: generated draft includes tracked claim and source URL\n'
 
-printf '\n[10/20] Release metadata draft smoke test\n'
+printf '\n[10/21] Release metadata draft smoke test\n'
 "$PYTHON" scripts/build_release_metadata.py --project data/projects/sample_project.json --sources-file "$TMP_DIR/empty-sources.json" --claims-file "$TMP_DIR/empty-claims.json" --output "$TMP_DIR/metadata.json" > "$TMP_DIR/metadata.out"
 grep -q '"publish_ready": false' "$TMP_DIR/metadata.json"
 grep -q '"release_status": "draft_blocked"' "$TMP_DIR/metadata.json"
 grep -q 'never uploads or publishes' "$TMP_DIR/metadata.json"
 printf 'PASS: metadata is generated as blocked draft; no publishing action exists\n'
 
-printf '\n[11/20] End-to-end source-to-draft-to-release-check smoke test\n'
+printf '\n[11/21] End-to-end source-to-draft-to-release-check smoke test\n'
 "$PYTHON" - "$TMP_DIR/draft.md" "$TMP_DIR/e2e-project.json" <<'PY'
 import json
 import sys
@@ -162,7 +162,7 @@ grep -q 'single_independent_domain' "$TMP_DIR/e2e-metadata.json"
 printf 'PASS: source -> claim -> cited draft -> corroboration warning -> blocked metadata package\n'
 
 if command -v espeak-ng >/dev/null 2>&1 || command -v espeak >/dev/null 2>&1; then
-  printf '\n[12/20] Optional offline narration smoke test\n'
+  printf '\n[12/21] Optional offline narration smoke test\n'
   printf 'Validation claim.\n' > "$TMP_DIR/narration.txt"
   "$PYTHON" scripts/generate_narration.py --text-file "$TMP_DIR/narration.txt" --language en --output "$TMP_DIR/tts-narration.wav" > "$TMP_DIR/tts-narration.json"
   grep -q '"narration": "PASS"' "$TMP_DIR/tts-narration.json"
@@ -173,7 +173,7 @@ else
 fi
 
 if { command -v espeak-ng >/dev/null 2>&1 || command -v espeak >/dev/null 2>&1; } && command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
-  printf '\n[13/20] Optional narration-to-video integration\n'
+  printf '\n[13/21] Optional narration-to-video integration\n'
   "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/tts-narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/narrated-final.mp4" > "$TMP_DIR/narrated-render.json"
   grep -q '"render": "PASS"' "$TMP_DIR/narrated-render.json"
   "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/narrated-final.mp4" --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/narrated-validation.json"
@@ -187,7 +187,7 @@ else
   printf '\nSKIP: narration-to-video integration (eSpeak/FFmpeg/FFprobe missing)\n'
 fi
 
-printf '\n[14/20] Translation citation-preservation smoke test\n'
+printf '\n[14/21] Translation citation-preservation smoke test\n'
 "$PYTHON" - "$TMP_DIR/draft.md" "$TMP_DIR/translated.md" <<'PY'
 import sys
 from pathlib import Path
@@ -201,24 +201,24 @@ grep -q '"validation": "PASS"' "$TMP_DIR/translation.json"
 grep -q '"claim_marker_count": 1' "$TMP_DIR/translation.json"
 printf 'PASS: translation fixture preserves tracked claim markers and source URLs\n'
 
-printf '\n[15/20] Read-only dashboard CLI smoke test\n'
+printf '\n[15/21] Read-only dashboard CLI smoke test\n'
 "$PYTHON" scripts/run_dashboard.py --help > "$TMP_DIR/dashboard-help.txt"
 grep -q -- '--host' "$TMP_DIR/dashboard-help.txt"
 grep -q -- '--sources-file' "$TMP_DIR/dashboard-help.txt"
 printf 'PASS: local dashboard exposes only read-only project status\n'
 
-printf '\n[16/20] Render validator CLI smoke test\n'
+printf '\n[16/21] Render validator CLI smoke test\n'
 "$PYTHON" scripts/validate_render.py --help > "$TMP_DIR/render-validation-help.txt"
 grep -q -- '--min-width' "$TMP_DIR/render-validation-help.txt"
 printf 'PASS: rendered output can be checked before editorial release review\n'
 
-printf '\n[17/20] RSS feed importer configuration smoke test\n'
+printf '\n[17/21] RSS feed importer configuration smoke test\n'
 "$PYTHON" scripts/import_feeds.py --config config/research_feeds.json --ledger "$TMP_DIR/feed-sources.json" > "$TMP_DIR/feed-import.json"
 grep -q '"feeds_configured": 0' "$TMP_DIR/feed-import.json"
 grep -q 'not factual verification' "$TMP_DIR/feed-import.json"
 printf 'PASS: feed importer runs safely with an empty opt-in feed list\n'
 
-printf '\n[18/20] Release evidence bundle CLI smoke test\n'
+printf '\n[18/21] Release evidence bundle CLI smoke test\n'
 "$PYTHON" scripts/build_release_bundle.py --project data/projects/sample_project.json --output "$TMP_DIR/release-bundle.json" > "$TMP_DIR/release-bundle-result.json"
 grep -q '"publish_ready": false' "$TMP_DIR/release-bundle-result.json"
 grep -q '"release_blocker_count"' "$TMP_DIR/release-bundle-result.json"
@@ -226,17 +226,24 @@ grep -q '"Final rendered video is missing."' "$TMP_DIR/release-bundle.json"
 grep -q '"YouTube metadata draft is missing."' "$TMP_DIR/release-bundle.json"
 printf 'PASS: evidence bundle created and missing production evidence blocks release\n'
 
-printf '\n[19/20] Cinematic map generator CLI smoke test\n'
+printf '\n[19/21] Cinematic map generator CLI smoke test\n'
 "$PYTHON" scripts/render_cinematic_map.py --help > "$TMP_DIR/cinematic-map-help.txt"
 grep -q -- '--scene' "$TMP_DIR/cinematic-map-help.txt"
 grep -q -- '--output' "$TMP_DIR/cinematic-map-help.txt"
 printf 'PASS: cinematic map CLI exposes scene and output arguments\n'
 
-printf '\n[20/20] Cinematic map scene validation and SVG smoke render\n'
+printf '\n[20/21] Cinematic map scene validation and SVG smoke render\n'
 "$PYTHON" scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output "$TMP_DIR/cinematic-scene.svg" > "$TMP_DIR/cinematic-scene-result.json"
 grep -q '"status": "RENDERED_SVG"' "$TMP_DIR/cinematic-scene-result.json"
 grep -q 'animateMotion' "$TMP_DIR/cinematic-scene.svg"
 grep -q 'ILLUSTRATIVE' "$TMP_DIR/cinematic-scene.svg"
 printf 'PASS: schematic route animation generated; geographic basemap and MP4 render remain future stages\n'
 
-printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
+printf '\\n[21/21] Editorial fact-check report smoke test\\n'
+"$PYTHON" scripts/build_fact_check_report.py --claims-file data/sources/claims.json --sources-file data/sources/sources.json --output "$TMP_DIR/fact-check-report.md" > "$TMP_DIR/fact-check-report-result.txt"
+grep -q 'does not establish truth' "$TMP_DIR/fact-check-report.md"
+grep -q 'Human review checklist' "$TMP_DIR/fact-check-report.md"
+grep -q 'FACT-CHECK REPORT CREATED' "$TMP_DIR/fact-check-report-result.txt"
+printf 'PASS: fact-check report includes source traceability, warnings, and human review checklist\\n'
+
+printf '\\nALL LOCAL VALIDATION CHECKS PASSED\\n'
