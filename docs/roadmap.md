@@ -22,7 +22,7 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Generate a traceable Markdown draft from recorded claim text, evidence labels, and source URLs; require human rewrite/review.
 - [ ] Generate polished narration from research inputs and stable claim IDs/source URLs, with citation-preserving editorial review.
 - [ ] Validate unsupported statements, contradictory dates, and uncited factual paragraphs.
-- [ ] Create a human-readable fact-check report distinguishing facts, attributed claims, analysis, and unresolved questions.
+- [x] Create a human-readable fact-check report from claim/source ledgers, including recorded status and corroboration warnings; the report explicitly states it does not verify truth. Full CI execution pending.
 - [x] Add a structural translation validator that ensures claim markers and source URLs remain unchanged and in order.
 - [ ] Add Urdu and English workflow first, then Russian and Chinese translation with glossary consistency checks and human linguistic review.
 
