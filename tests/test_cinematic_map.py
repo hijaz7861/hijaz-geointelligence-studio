@@ -72,5 +72,54 @@ class CinematicMapTests(unittest.TestCase):
                 render_animated_svg(fixture(), output)
             self.assertEqual(output.read_text(encoding="utf-8"), "keep me")
 
+
+    def test_rejects_non_boolean_illustrative_flag(self):
+        scene = fixture()
+        scene["routes"][0]["illustrative"] = "false"
+        with self.assertRaisesRegex(CinematicMapError, "illustrative must be a boolean"):
+            validate_scene(scene)
+    def test_factual_route_requires_nonempty_list_of_source_refs(self):
+        scene = fixture()
+        scene["routes"][0]["illustrative"] = False
+        scene["routes"][0]["source_refs"] = "not-a-reference-list"
+        with self.assertRaisesRegex(CinematicMapError, "source_refs must be a non-empty list"):
+            validate_scene(scene)
+    def test_factual_event_requires_source_refs(self):
+        scene = fixture()
+        scene["events"][0]["illustrative"] = False
+        with self.assertRaisesRegex(CinematicMapError, "source_refs must be a non-empty list"):
+            validate_scene(scene)
+    def test_rejects_non_string_event_label(self):
+        scene = fixture()
+        scene["events"][0]["label"] = {"unexpected": "object"}
+        with self.assertRaisesRegex(CinematicMapError, "Event timestamp or label is invalid"):
+            validate_scene(scene)
+    def test_rejects_empty_scene_title(self):
+        scene = fixture()
+        scene["title"] = "  "
+        with self.assertRaisesRegex(CinematicMapError, "title must be a non-empty string"):
+            validate_scene(scene)
+
+
+    def test_factual_route_rejects_empty_source_refs(self):
+        scene = fixture()
+        scene["routes"][0]["illustrative"] = False
+        scene["routes"][0]["source_refs"] = []
+        with self.assertRaisesRegex(CinematicMapError, "source_refs must be a non-empty list"):
+            validate_scene(scene)
+
+    def test_factual_route_rejects_blank_source_ref(self):
+        scene = fixture()
+        scene["routes"][0]["illustrative"] = False
+        scene["routes"][0]["source_refs"] = ["   "]
+        with self.assertRaisesRegex(CinematicMapError, "source_refs must be a non-empty list"):
+            validate_scene(scene)
+
+    def test_rejects_non_boolean_event_illustrative_flag(self):
+        scene = fixture()
+        scene["events"][0]["illustrative"] = "false"
+        with self.assertRaisesRegex(CinematicMapError, "illustrative must be a boolean"):
+            validate_scene(scene)
+
 if __name__ == "__main__":
     unittest.main()
