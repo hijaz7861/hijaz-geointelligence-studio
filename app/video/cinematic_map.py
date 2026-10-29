@@ -128,7 +128,8 @@ def render_animated_svg(scene, output_path, *, overwrite=False, geojson_path=Non
         overlay = render_geojson_overlay(geojson_path, bounds, attribution=basemap_attribution, license_name=basemap_license, source_url=basemap_source_url, project=_xy)
         parts.append(overlay)
     parts.append('<text x="70" y="42" fill="#f0f6fc" font-size="27" font-family="sans-serif" font-weight="700">' + xml.escape(str(scene["title"])) + '</text>')
-    parts.append('<text x="70" y="680" fill="#9fb3c8" font-size="16" font-family="sans-serif">SCHEMATIC MAP • NOT TO SCALE</text>')
+    map_notice = "GEOGRAPHIC BOUNDARIES • NATURAL EARTH 1:110M • GENERALIZED; NOT FOR NAVIGATION" if geojson_path is not None else "SCHEMATIC MAP • NOT TO SCALE"
+    parts.append('<text x="70" y="680" fill="#9fb3c8" font-size="16" font-family="sans-serif">' + xml.escape(map_notice) + '</text>')
     for route in scene["routes"]:
         coords = [_xy(p["lon"], p["lat"], bounds) for p in route["points"]]
         path = " ".join(("M" if i == 0 else "L") + f" {x} {y}" for i, (x, y) in enumerate(coords))
