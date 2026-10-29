@@ -115,3 +115,17 @@ This produces `/tmp/hijaz-natural-earth-sample.svg` using only Python's standard
 Natural Earth's official terms describe its data as public domain and allow commercial use. The upstream conversion repository states that its GeoJSON conversion is CC0. The sample visibly credits Natural Earth and the conversion source even though the official terms say credit is not required. These are source-published rights statements, not legal advice.
 
 The 1:110m layer is generalized, not a detailed boundary dataset. Natural Earth uses de facto boundary representation and warns that data may contain errors or omissions. The renderer labels this output as generalized and not for navigation. A person must still inspect the rendered SVG and confirm that the chosen map extent and political-boundary treatment are appropriate before publication. The bundled sample route remains illustrative, not factual.
+
+## Ready-to-run world map preview
+
+The repository bundles a generalized Natural Earth 1:110m world-country GeoJSON dataset at `data/geo/natural-earth-110m-countries.geojson`; source and terms are documented in `data/geo/NATURAL_EARTH_LICENSE.md`. It is appropriate for illustrative world-scale previews, not navigation, surveying, or legal-boundary analysis.
+
+From the repository root, install the Python dependencies and render the bundled sample:
+
+```sh
+python3 -m pip install -r requirements.txt
+python3 -m pip install -r requirements-media.txt
+python3 scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output artifacts/natural-earth-world-preview.svg --overwrite --geojson data/geo/natural-earth-110m-countries.geojson --basemap-attribution "Natural Earth (public-domain dataset; 1:110m Admin 0 Countries)" --basemap-license "Public domain (Natural Earth; verify current terms)" --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
+```
+
+The data is checked into the repository and is not downloaded at run time. Attribution is rendered into the SVG. Verify current source terms before external redistribution; the bundled map is generalized and illustrative, not an authoritative GIS product.
