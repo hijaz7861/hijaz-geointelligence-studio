@@ -59,9 +59,12 @@ def _frame_svg(template, scene, seconds):
     pulse_index = int(seconds * 3) % 3
     pulse_radius = (9, 16, 24)[pulse_index]
     result = re.sub(
-        r'(<circle cx="[^"]+" cy="[^"]+" )r="15"( fill="none" stroke="#ff6b6b" stroke-width="3">'
+        r'<circle cx="([^"]+)" cy="([^"]+)" r="15" fill="none" stroke="#ff6b6b" stroke-width="3">'
         r'<animate attributeName="r"[^>]*/>',
-        lambda m: m.group(1) + f'r="{pulse_radius}"' + m.group(2),
+        lambda m: (
+            f'<circle cx="{m.group(1)}" cy="{m.group(2)}" r="{pulse_radius}" '
+            'fill="none" stroke="#ff6b6b" stroke-width="3">'
+        ),
         result,
     )
     return result
