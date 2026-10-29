@@ -62,6 +62,22 @@ python scripts/validate_project.py --project data/projects/sample_project.json
 
 The sample package is intentionally not approved for publishing. The validator checks structure and traceability; it does not fact-check claims or certify copyright status. GitHub Actions are not required for these checks.
 
+## Ready-to-run geographic map sample
+
+The repository bundles a pinned Natural Earth 1:110m Admin-0 country-boundary GeoJSON dataset under `data/assets/`. The publisher's official terms identify Natural Earth data as public domain; the upstream GeoJSON conversion repository identifies its conversion as CC0. Source revision, upstream blob SHA, attribution guidance, and boundary caveats are recorded in [the dataset notice](data/assets/NATURAL_EARTH_110M_NOTICE.md).
+
+Requirements: Python 3.10+ (standard library only for SVG output).
+
+From the repository root:
+
+```bash
+bash scripts/render_natural_earth_sample.sh
+```
+
+Output: `/tmp/hijaz-natural-earth-sample.svg`. Open that SVG in a browser or image viewer that supports SVG. To choose a different path, pass it as the first argument. To intentionally replace an existing output, pass `--overwrite` as the second argument.
+
+The bundled boundaries are generalized for world/overview maps, not local precision or navigation. The sample's moving route is explicitly illustrative and must not be interpreted as a real event. Inspect the map visually before using it in a release.
+
 ## Documentation
 - [Claim ledger workflow](docs/claim-ledger.md)
 - [Safe RSS/Atom feed importer](docs/feed-importer.md)
