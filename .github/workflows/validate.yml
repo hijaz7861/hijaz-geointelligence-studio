@@ -34,6 +34,7 @@ jobs:
       - name: Install media test tools
         run: |
           sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends ffmpeg espeak-ng
+          sudo apt-get install --yes --no-install-recommends ffmpeg espeak-ng libcairo2
+          python -m pip install --disable-pip-version-check -r requirements-media.txt
       - name: Run repository validation suite
         run: bash scripts/validate.sh
