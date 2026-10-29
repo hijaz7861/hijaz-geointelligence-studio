@@ -12,7 +12,7 @@ def assess_corroboration(claims: list[dict[str, Any]], sources: list[dict[str, A
         text = claim["claim"].strip()
         if not text:
             continue
-        refs = [by_url[url] for url in claim.get("source_urls", []) if url in by_url]
+        refs = [by_url[url] for url in claim.get("source_urls", []) if isinstance(url, str) and url in by_url]
         independent_domains = set()
         for source in refs:
             if source.get("source_type") == "independent_reporting":
