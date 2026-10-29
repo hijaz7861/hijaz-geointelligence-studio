@@ -5,8 +5,18 @@ fetch sources, independently verify claims, or decide whether a claim is true.
 """
 from __future__ import annotations
 from collections import Counter
+import html
 from typing import Any
+from urllib.parse import urlparse
 from app.research.corroboration import assess_corroboration
+
+def _safe_source_link(title: Any, url: Any) -> str:
+    label = html.escape(str(title), quote=False)
+    raw_url = str(url)
+    parsed = urlparse(raw_url)
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password or any(ch.isspace() for ch in raw_url):
+        return html.escape(raw_url, quote=False)
+    return f'<a href="{html.escape(raw_url, quote=True)}">{label}</a>'
 
 def build_fact_check_report(claims: list[dict[str, Any]], sources: list[dict[str, Any]]) -> str:
     by_url = {source["url"]: source for source in sources if isinstance(source, dict) and isinstance(source.get("url"), str)}
@@ -33,13 +43,19 @@ def build_fact_check_report(claims: list[dict[str, Any]], sources: list[dict[str
         refs = claim.get("source_urls", [])
         if not isinstance(refs, list):
             refs = []
-        lines.extend([f"### {index}. {text}", "", f"- Recorded status: **{status}**", f"- Linked sources: {len(refs)}"])
+        lines.extend([f"### {index}. {html.escape(text, quote=False)}", "", f"- Recorded status: **{html.escape(status, quote=False)}**", f"- Linked sources: {len(refs)}"])
         for url in refs:
+            if not isinstance(url, str):
+                lines.append("- Invalid non-text source reference in claim ledger.")
+                continue
             source = by_url.get(url)
             if source:
-                lines.append(f"- Source: [{source.get('title', url)}]({url}) — {source.get('source_type', 'unknown source type')}; published {source.get('published_at', 'date unknown')}")
+                link = _safe_source_link(source.get("title", url), url)
+                source_type = html.escape(str(source.get("source_type", "unknown source type")), quote=False)
+                published = html.escape(str(source.get("published_at", "date unknown")), quote=False)
+                lines.append(f"- Source: {link} — {source_type}; published {published}")
             else:
-                lines.append(f"- Source reference not found in supplied source ledger: {url}")
+                lines.append(f"- Source reference not found in supplied source ledger: {html.escape(url, quote=False)}")
         claim_warnings = warning_map.get(str(claim.get("claim", "")).strip(), [])
         if claim_warnings:
             for warning in claim_warnings:
