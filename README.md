@@ -102,3 +102,13 @@ This is an evolving MVP, not a completed production video-automation system. The
 ## Project ownership
 
 Project owner and maintainer: **Muhammad Naeem Khan** (`hijaz7861`).
+
+## Ready-to-run real-world map preview
+
+A generalized Natural Earth world-country GeoJSON dataset is bundled locally at `data/geo/natural-earth-110m-countries.geojson`. See [dataset provenance and terms](data/geo/NATURAL_EARTH_LICENSE.md) and the [cinematic map run guide](docs/cinematic-map-generator.md).
+
+```sh
+python3 -m pip install -r requirements.txt
+python3 -m pip install -r requirements-media.txt
+python3 scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output artifacts/natural-earth-world-preview.svg --overwrite --geojson data/geo/natural-earth-110m-countries.geojson --basemap-attribution "Natural Earth (public-domain dataset; 1:110m Admin 0 Countries)" --basemap-license "Public domain (Natural Earth; verify current terms)" --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
+```
