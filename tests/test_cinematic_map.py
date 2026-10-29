@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -24,6 +25,31 @@ class CinematicMapTests(unittest.TestCase):
             self.assertIn("<animateMotion", text)
             self.assertIn("SCHEMATIC MAP", text)
             self.assertIn("ILLUSTRATIVE ROUTE", text)
+    def test_renders_local_geojson_overlay_with_attribution(self):
+        scene = fixture()
+        geojson = {"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            geojson_path = Path(tmp) / "land.geojson"
+            geojson_path.write_text(json.dumps(geojson), encoding="utf-8")
+            output = render_animated_svg(
+                scene, Path(tmp) / "scene.svg", geojson_path=geojson_path,
+                basemap_attribution="Synthetic test geometry",
+                basemap_license="CC0-1.0",
+                basemap_source_url="https://example.org/synthetic-geometry",
+            )
+            rendered = output.read_text(encoding="utf-8")
+        self.assertIn('id="licensed-geojson-overlay"', rendered)
+        self.assertIn("Synthetic test geometry", rendered)
+        self.assertIn("CC0-1.0", rendered)
+
+    def test_geojson_overlay_requires_license_metadata(self):
+        scene = fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            geojson_path = Path(tmp) / "land.geojson"
+            geojson_path.write_text(json.dumps({"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}), encoding="utf-8")
+            with self.assertRaisesRegex(Exception, "Basemap attribution is required"):
+                render_animated_svg(scene, Path(tmp) / "scene.svg", geojson_path=geojson_path)
+
     def test_rejects_out_of_bounds_coordinate(self):
         scene = fixture()
         scene["routes"][0]["points"][1]["lon"] = 50
