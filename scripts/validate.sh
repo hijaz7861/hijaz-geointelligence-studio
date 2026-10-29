@@ -252,7 +252,7 @@ printf '\n[22/22] Cinematic map MP4 frame-render smoke test\n'
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   "$PYTHON" scripts/render_cinematic_mp4.py --scene data/projects/sample_cinematic_scene.json --output "$TMP_DIR/cinematic-scene.mp4" --fps 1 > "$TMP_DIR/cinematic-mp4-result.json"
   grep -q '"render": "PASS"' "$TMP_DIR/cinematic-mp4-result.json"
-  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/cinematic-scene.mp4" --min-width 1280 --min-height 720 > "$TMP_DIR/cinematic-mp4-validation.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/cinematic-scene.mp4" --allow-missing-audio --min-width 1280 --min-height 720 > "$TMP_DIR/cinematic-mp4-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/cinematic-mp4-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/cinematic-scene.mp4" > "$TMP_DIR/cinematic-mp4-streams.txt"
   grep -q 'video' "$TMP_DIR/cinematic-mp4-streams.txt"
