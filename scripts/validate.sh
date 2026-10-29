@@ -270,10 +270,10 @@ SRT
   grep -q 'video' "$TMP_DIR/cinematic-final-streams.txt"
   grep -q 'audio' "$TMP_DIR/cinematic-final-streams.txt"
   grep -q 'subtitle' "$TMP_DIR/cinematic-final-streams.txt"
-  mkdir -p "$ROOT_DIR/.ci-artifacts"
-  cp "$TMP_DIR/cinematic-scene.mp4" "$ROOT_DIR/.ci-artifacts/cinematic-scene-visuals-only.mp4"
-  cp "$TMP_DIR/cinematic-final.mp4" "$ROOT_DIR/.ci-artifacts/cinematic-scene-synthetic-audio-srt-smoke.mp4"
-  ffmpeg -hide_banner -loglevel error -ss 10 -i "$TMP_DIR/cinematic-scene.mp4" -frames:v 1 -y "$ROOT_DIR/.ci-artifacts/cinematic-scene-poster.png"
+  mkdir -p "$ROOT_DIR/ci-artifacts"
+  cp "$TMP_DIR/cinematic-scene.mp4" "$ROOT_DIR/ci-artifacts/cinematic-scene-visuals-only.mp4"
+  cp "$TMP_DIR/cinematic-final.mp4" "$ROOT_DIR/ci-artifacts/cinematic-scene-synthetic-audio-srt-smoke.mp4"
+  ffmpeg -hide_banner -loglevel error -ss 10 -i "$TMP_DIR/cinematic-scene.mp4" -frames:v 1 -y "$ROOT_DIR/ci-artifacts/cinematic-scene-poster.png"
   printf 'PASS: cinematic MP4 rendered, muxed with synthetic audio/SRT, all three streams validated, and review artifacts saved\n'
 else
   printf 'SKIP: cinematic MP4 smoke render (FFmpeg/FFprobe not installed)\n'
