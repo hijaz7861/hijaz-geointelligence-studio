@@ -38,3 +38,11 @@ jobs:
           python -m pip install --disable-pip-version-check -r requirements-media.txt
       - name: Run repository validation suite
         run: bash scripts/validate.sh
+      - name: Upload cinematic preview for human visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cinematic-map-review-preview
+          path: .ci-artifacts/
+          if-no-files-found: ignore
+          retention-days: 3
