@@ -140,6 +140,8 @@ class CinematicMapTests(unittest.TestCase):
         self.assertIn('id="licensed-geojson-overlay"', rendered)
         self.assertIn("Synthetic test geometry", rendered)
         self.assertIn("CC0-1.0", rendered)
+        self.assertIn("GEOGRAPHIC BOUNDARIES", rendered)
+        self.assertNotIn("SCHEMATIC MAP • NOT TO SCALE", rendered)
 
     def test_geojson_overlay_requires_license_metadata(self):
         scene = fixture()
@@ -148,6 +150,27 @@ class CinematicMapTests(unittest.TestCase):
             geojson_path.write_text(json.dumps({"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}), encoding="utf-8")
             with self.assertRaisesRegex(GeoJSONOverlayError, "Basemap attribution is required"):
                 render_animated_svg(scene, Path(tmp) / "scene.svg", geojson_path=geojson_path)
+
+
+    def test_bundled_natural_earth_dataset_renders_as_geographic_overlay(self):
+        scene = fixture()
+        root = Path(__file__).resolve().parents[1]
+        geojson_path = root / "data" / "assets" / "natural_earth_110m_admin_0_countries.geojson"
+        self.assertTrue(geojson_path.is_file(), "Bundled Natural Earth dataset must exist")
+        with tempfile.TemporaryDirectory() as tmp:
+            output = render_animated_svg(
+                scene, Path(tmp) / "natural-earth.svg",
+                geojson_path=geojson_path,
+                basemap_attribution="Made with Natural Earth; GeoJSON conversion by Martyn Afford",
+                basemap_license="Public domain (Natural Earth); CC0-1.0 (GeoJSON conversion)",
+                basemap_source_url="https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json",
+            )
+            rendered = output.read_text(encoding="utf-8")
+        self.assertIn('id="licensed-geojson-overlay"', rendered)
+        self.assertIn("Made with Natural Earth", rendered)
+        self.assertIn("GEOGRAPHIC BOUNDARIES", rendered)
+        self.assertNotIn("SCHEMATIC MAP • NOT TO SCALE", rendered)
+
 
 if __name__ == "__main__":
     unittest.main()

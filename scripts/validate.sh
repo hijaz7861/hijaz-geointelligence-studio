@@ -239,6 +239,12 @@ printf '\n[20/22] Cinematic map scene validation and SVG smoke render\n'
 grep -q '"status": "RENDERED_SVG"' "$TMP_DIR/cinematic-scene-result.json"
 grep -q 'animateMotion' "$TMP_DIR/cinematic-scene.svg"
 grep -q 'ILLUSTRATIVE' "$TMP_DIR/cinematic-scene.svg"
+"$PYTHON" scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output "$TMP_DIR/natural-earth-map.svg" --geojson data/assets/natural_earth_110m_admin_0_countries.geojson --basemap-attribution "Made with Natural Earth; GeoJSON conversion by Martyn Afford" --basemap-license "Public domain (Natural Earth); CC0-1.0 (GeoJSON conversion)" --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json" > "$TMP_DIR/natural-earth-map-result.json"
+grep -q '"status": "RENDERED_SVG"' "$TMP_DIR/natural-earth-map-result.json"
+grep -q 'GEOGRAPHIC BOUNDARIES' "$TMP_DIR/natural-earth-map.svg"
+grep -q 'Made with Natural Earth' "$TMP_DIR/natural-earth-map.svg"
+mkdir -p "$ROOT_DIR/ci-artifacts"
+cp "$TMP_DIR/natural-earth-map.svg" "$ROOT_DIR/ci-artifacts/natural-earth-map-review.svg"
 printf 'PASS: schematic route animation generated; geographic basemap remains a manual-review requirement\n'
 
 printf '\n[21/22] Editorial fact-check report smoke test\n'
