@@ -5,7 +5,7 @@ from pathlib import Path
 from app.video.geojson_overlay import render_geojson_overlay
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data/geo/natural-earth-110m-countries.geojson"
+DATA = ROOT / "data/assets/natural_earth_110m_admin_0_countries.geojson"
 
 class TestBundledNaturalEarthDataset(unittest.TestCase):
     def test_dataset_is_valid_bounded_geojson_with_polygon_features(self):
