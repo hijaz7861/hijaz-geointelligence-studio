@@ -61,3 +61,20 @@ The current renderer is an initial schematic graticule preview, not a complete c
 ## Validation hardening note
 
 The validator treats `illustrative` as a JSON boolean only; strings such as `"false"`, numbers, and null are invalid. If a route or event is factual (`illustrative: false`, or the flag is omitted), `source_refs` must be a non-empty JSON array of non-empty strings. Each reference should be a stable claim ID or a source URL recorded in the research ledger. This is structural validation only: it does not fetch URLs, assess source quality, or independently verify a claim. Human source review remains mandatory.
+
+
+## Draft frame-based MP4 renderer (feature branch)
+
+The separate `feature/deterministic-cinematic-mp4` branch adds `scripts/render_cinematic_mp4.py`. It rasterizes each scene frame with CairoSVG, explicitly positions route markers per frame (rather than relying on SVG SMIL support), and encodes a visuals-only MP4 with FFmpeg.
+
+Example:
+
+```bash
+python3 -m pip install -r requirements-media.txt
+python3 scripts/render_cinematic_mp4.py \
+  --scene data/projects/sample_cinematic_scene.json \
+  --output /tmp/cinematic-preview.mp4 \
+  --fps 5
+```
+
+Safety and resource limits: 1–12 FPS, scene duration at most 60 seconds, at most 720 frames, explicit timeout, and no overwrite unless `--overwrite` is passed. The preview is schematic and labelled not to scale; it is not a licensed basemap and it contains no audio. Use `scripts/render_video.py` to mux separately reviewed narration and SRT subtitles. CairoSVG/FFmpeg integration, generated output quality, and the full CI run must be verified before this draft can be considered ready. A synthetic sample passing tests does not establish real-world geographic accuracy or production readiness.
