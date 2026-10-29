@@ -92,9 +92,19 @@ def render_geojson_overlay(path, bounds, *, attribution, license_name, source_ur
     parsed = urlparse(source_url)
     if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
         raise GeoJSONOverlayError("Basemap source URL must be an HTTPS URL without embedded credentials.")
+    if not isinstance(bounds, dict):
+        raise GeoJSONOverlayError("Map bounds must be an object.")
+    try:
+        west, east, south, north = (bounds[key] for key in ("west", "east", "south", "north"))
+    except (KeyError, TypeError) as exc:
+        raise GeoJSONOverlayError("Map bounds must define west, east, south, and north.") from exc
+    if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v)
+           for v in (west, east, south, north)):
+        raise GeoJSONOverlayError("Map bounds must be finite numbers.")
+    if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
+        raise GeoJSONOverlayError("Map bounds must be ordered and within geographic limits.")
     polygons = load_geojson_polygons(path)
     paths = []
-    west, east, south, north = (bounds[key] for key in ("west", "east", "south", "north"))
     for polygon in polygons:
         ring_paths = []
         for ring in polygon:
@@ -106,4 +116,7 @@ def render_geojson_overlay(path, bounds, *, attribution, license_name, source_ur
     if not paths:
         raise GeoJSONOverlayError("GeoJSON overlay contains no polygon geometry.")
     footer = xml.escape(f"Basemap: {attribution} | {license_name} | {source_url}")
-    return '<g id="licensed-geojson-overlay">' + "".join(paths) + '</g>' + f'<text x="70" y="704" fill="#c1d7d3" font-size="10" font-family="sans-serif">{footer}</text>'
+    return ('<defs><clipPath id="geojson-map-viewport"><rect x="70" y="70" width="1140" height="580"/></clipPath></defs>'
+            + '<g id="licensed-geojson-overlay" clip-path="url(#geojson-map-viewport)">'
+            + "".join(paths) + '</g>'
+            + f'<text x="70" y="704" fill="#c1d7d3" font-size="10" font-family="sans-serif">{footer}</text>')
