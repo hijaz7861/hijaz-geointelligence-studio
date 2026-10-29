@@ -1,0 +1,2 @@
+# Optional rasterization dependency for deterministic cinematic MP4 previews.
+CairoSVG==2.7.1
