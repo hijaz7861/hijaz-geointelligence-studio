@@ -51,7 +51,7 @@ Create a repeatable, local-first visual-production component for historical and 
 ## Current implementation status (main)
 - [x] Initial Python scene validator and deterministic SVG animation CLI.
 - [x] Illustrative sample scene and unit tests for bounds, references, timestamps, and overwrite protection.
-- [x] CI execution verified on 2026-10-28: 126 unit tests and all 20 repository validation stages passed in GitHub Actions.
+- [x] Main baseline CI verified on 2026-10-29: 132 unit tests and all 21 repository validation stages passed, including the editorial fact-check report. The optional local GeoJSON polygon overlay remains in draft PR #6 and is not yet part of main.
 - [ ] Licensed geographic basemap, camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and cinematic-map MP4 renderer integration remain unimplemented.
 - [ ] A source-grounded, human-reviewed geographic sample still needs to be rendered and inspected.
 
