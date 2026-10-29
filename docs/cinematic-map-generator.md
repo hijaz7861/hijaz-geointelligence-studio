@@ -97,3 +97,21 @@ python3 scripts/render_cinematic_map.py \\
 ```
 
 Use the exact terms supplied by the dataset publisher; do not copy this placeholder attribution into a real release. The source URL is recorded visibly but is not fetched or independently verified. Supported geometry is intentionally limited to polygon boundaries; points, lines, tiles, reprojection, and automatic clipping/generalization are not implemented. Coordinates are projected into the current schematic scene bounds and the output is still an SVG, not a cinematic MP4. Validate the dataset's license, attribution requirements, geographic suitability, and rendering quality manually before release.
+
+## Ready-to-run real-boundary sample
+
+The repository includes a pinned Natural Earth 1:110m Admin-0 Countries GeoJSON file at `data/assets/natural_earth_110m_admin_0_countries.geojson`. The source and rights evidence are recorded in [NATURAL_EARTH_110M_NOTICE.md](../data/assets/NATURAL_EARTH_110M_NOTICE.md). The upstream dataset is pinned to commit `0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e`; its source file Git blob SHA is `e3d3723ae0c5c6e89757f748ef91efcbcbd33ccd`.
+
+Run from the repository root:
+
+```bash
+bash scripts/render_natural_earth_sample.sh
+```
+
+This produces `/tmp/hijaz-natural-earth-sample.svg` using only Python's standard library. To choose an output path, pass it as the first argument. Existing outputs are not overwritten unless `--overwrite` is passed as the second argument.
+
+### Rights and accuracy gate
+
+Natural Earth's official terms describe its data as public domain and allow commercial use. The upstream conversion repository states that its GeoJSON conversion is CC0. The sample visibly credits Natural Earth and the conversion source even though the official terms say credit is not required. These are source-published rights statements, not legal advice.
+
+The 1:110m layer is generalized, not a detailed boundary dataset. Natural Earth uses de facto boundary representation and warns that data may contain errors or omissions. The renderer labels this output as generalized and not for navigation. A person must still inspect the rendered SVG and confirm that the chosen map extent and political-boundary treatment are appropriate before publication. The bundled sample route remains illustrative, not factual.
