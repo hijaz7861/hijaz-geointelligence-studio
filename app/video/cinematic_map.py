@@ -6,6 +6,7 @@ import os
 import tempfile
 import xml.sax.saxutils as xml
 from pathlib import Path
+from app.video.geojson_overlay import GeoJSONOverlayError, render_geojson_overlay
 
 class CinematicMapError(ValueError):
     """Invalid scene plan or unsafe output operation."""
@@ -103,7 +104,7 @@ def _xy(lon, lat, bounds, width=1280, height=720, margin=70):
     y = height - margin - (lat - bounds["south"]) / (bounds["north"] - bounds["south"]) * (height - 2 * margin)
     return round(x, 2), round(y, 2)
 
-def render_animated_svg(scene, output_path, *, overwrite=False):
+def render_animated_svg(scene, output_path, *, overwrite=False, geojson_path=None, basemap_attribution=None, basemap_license=None, basemap_source_url=None):
     validate_scene(scene)
     output = Path(output_path).expanduser().resolve()
     if output.suffix.lower() != ".svg":
@@ -123,6 +124,9 @@ def render_animated_svg(scene, output_path, *, overwrite=False):
     for y in range(70, 651, 80):
         parts.append(f'<line x1="70" y1="{y}" x2="1210" y2="{y}"/>')
     parts.append('</g>')
+    if geojson_path is not None:
+        overlay = render_geojson_overlay(geojson_path, bounds, attribution=basemap_attribution, license_name=basemap_license, source_url=basemap_source_url, project=_xy)
+        parts.append(overlay)
     parts.append('<text x="70" y="42" fill="#f0f6fc" font-size="27" font-family="sans-serif" font-weight="700">' + xml.escape(str(scene["title"])) + '</text>')
     parts.append('<text x="70" y="680" fill="#9fb3c8" font-size="16" font-family="sans-serif">SCHEMATIC MAP • NOT TO SCALE</text>')
     for route in scene["routes"]:
