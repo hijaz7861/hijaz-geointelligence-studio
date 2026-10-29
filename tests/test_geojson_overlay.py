@@ -57,6 +57,19 @@ class GeoJSONOverlayTests(unittest.TestCase):
             with self.assertRaisesRegex(GeoJSONOverlayError, "HTTPS URL"):
                 render_geojson_overlay(path, BOUNDS, attribution="Provider", license_name="Open license", source_url="http://example.org/data", project=project)
 
+    def test_clips_overlay_to_map_viewport(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self.write_geojson(tmp, POLYGON)
+            svg = render_geojson_overlay(path, BOUNDS, attribution="Provider", license_name="CC BY", source_url="https://example.org/data", project=project)
+        self.assertIn('clip-path="url(#geojson-map-viewport)"', svg)
+        self.assertIn('<clipPath id="geojson-map-viewport">', svg)
+
+    def test_rejects_invalid_map_bounds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self.write_geojson(tmp, POLYGON)
+            with self.assertRaisesRegex(GeoJSONOverlayError, "Map bounds must be ordered"):
+                render_geojson_overlay(path, {"west": 5, "east": -5, "south": -10, "north": 10}, attribution="Provider", license_name="CC BY", source_url="https://example.org/data", project=project)
+
     def test_escapes_attribution_markup(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = self.write_geojson(tmp, POLYGON)
