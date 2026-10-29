@@ -43,6 +43,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cinematic-map-review-preview
-          path: .ci-artifacts/
+          path: ci-artifacts/
           if-no-files-found: ignore
           retention-days: 3
