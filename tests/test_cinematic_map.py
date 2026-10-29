@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from app.video.cinematic_map import CinematicMapError, render_animated_svg, validate_scene
+from app.video.geojson_overlay import GeoJSONOverlayError
 
 def fixture():
     return {
@@ -47,7 +48,7 @@ class CinematicMapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             geojson_path = Path(tmp) / "land.geojson"
             geojson_path.write_text(json.dumps({"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}), encoding="utf-8")
-            with self.assertRaisesRegex(Exception, "Basemap attribution is required"):
+            with self.assertRaisesRegex(GeoJSONOverlayError, "Basemap attribution is required"):
                 render_animated_svg(scene, Path(tmp) / "scene.svg", geojson_path=geojson_path)
 
     def test_rejects_out_of_bounds_coordinate(self):
