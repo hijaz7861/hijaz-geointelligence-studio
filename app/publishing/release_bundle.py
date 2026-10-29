@@ -2,6 +2,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 from app.editorial.script_validator import ProjectValidationError, release_blockers, validate_project_file
@@ -66,7 +67,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     if render_path is None or not Path(render_path).expanduser().is_file():
         blockers.append("Final rendered video is missing.")
     else:
-        try: render_report=inspect_rendered_video(render_path,require_audio=True,require_subtitles=False,min_width=min_width,min_height=min_height)
+        try: render_report=inspect_rendered_video(render_path,require_audio=True,require_subtitles=True,min_width=min_width,min_height=min_height)
         except (RenderValidationError,OSError) as exc: blockers.append(f"Rendered video technical validation failed: {exc}")
     subtitle_report=None
     if subtitle_path is None or not Path(subtitle_path).expanduser().is_file():
@@ -74,7 +75,25 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     else:
         try:
             cues=validate_srt_file(subtitle_path)
-            subtitle_report={"validation":"PASS","cue_count":len(cues),"duration_ms":max(c.end_ms for c in cues),"note":"Structure/timing only; linguistic accuracy and audio synchronization need human review."}
+            subtitle_duration_ms = max(c.end_ms for c in cues)
+            subtitle_report = {
+                "validation": "PASS",
+                "cue_count": len(cues),
+                "duration_ms": subtitle_duration_ms,
+                "note": "Structure/timing only; linguistic accuracy and audio synchronization need human review.",
+            }
+            if render_report is not None:
+                duration_seconds = render_report.get("duration_seconds") if isinstance(render_report, dict) else None
+                if isinstance(duration_seconds, bool) or not isinstance(duration_seconds, (int, float)) or not math.isfinite(float(duration_seconds)) or duration_seconds <= 0:
+                    blockers.append("Rendered video duration is unavailable for subtitle timeline comparison.")
+                else:
+                    render_duration_ms = round(float(duration_seconds) * 1000)
+                    timeline_within_render = subtitle_duration_ms <= render_duration_ms + 250
+                    subtitle_report["render_duration_ms"] = render_duration_ms
+                    subtitle_report["timeline_within_render"] = timeline_within_render
+                    if not timeline_within_render:
+                        overrun_ms = subtitle_duration_ms - render_duration_ms
+                        blockers.append(f"Subtitle timeline exceeds rendered video duration by {overrun_ms} ms.")
         except (SubtitleValidationError,OSError) as exc: blockers.append(f"Subtitle validation failed: {exc}")
     if metadata_path is None or not Path(metadata_path).expanduser().is_file():
         blockers.append("YouTube metadata draft is missing.")

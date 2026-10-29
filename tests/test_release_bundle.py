@@ -20,7 +20,7 @@ class ReleaseBundleTests(unittest.TestCase):
   self.srt=self.root/'final.srt'; self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nSynthetic caption.\n',encoding='utf-8')
   self.metadata=self.root/'metadata.json'; self.metadata.write_text(json.dumps({'publish_ready':False,'release_blockers':['Human approval missing']}),encoding='utf-8')
  def tearDown(self): self.temp.cleanup()
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720})
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
  def test_bundle_hashes_inputs_and_never_marks_publish_ready(self,probe):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertEqual(bundle['structural_validation'],'PASS'); self.assertFalse(bundle['publish_ready']); self.assertEqual(bundle['render_validation']['validation'],'PASS')
@@ -28,6 +28,14 @@ class ReleaseBundleTests(unittest.TestCase):
   project_entry=next(item for item in bundle['input_files'] if item['label']=='project')
   self.assertEqual(project_entry['sha256'],sha256_file(self.project))
   self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
+  probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,min_width=1280,min_height=720)
+  self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
+ def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):
+  self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past render.\n',encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
+  self.assertFalse(bundle['subtitle_validation']['timeline_within_render'])
+  self.assertTrue(any('Subtitle timeline exceeds rendered video duration by 1000 ms.' in item for item in bundle['release_blockers']))
  def test_missing_render_subtitle_and_metadata_are_blockers(self):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertTrue(any('rendered video is missing' in item.lower() for item in bundle['release_blockers']))
