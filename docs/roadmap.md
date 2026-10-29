@@ -59,3 +59,13 @@ This repository is an evolving MVP, not a completed production system. A phase i
 
 ## Definition of complete
 The project is not production-complete until a sample documentary can be traced end-to-end from sources to claims to a cited multilingual script to rights-cleared assets to a rendered video, with a human approval record and a reproducible test report. A passing unit-test suite alone is not completion.
+
+
+## Current draft branch — cinematic MP4 rendering
+
+- [x] Add a bounded frame-based renderer prototype that positions route markers explicitly per frame and encodes visuals-only MP4 through FFmpeg.
+- [x] Add CLI, interpolation/safety unit tests, a CairoSVG media dependency pin, and a CI smoke-render stage.
+- [ ] Confirm the new branch passes the full GitHub Actions workflow; do not mark this stage verified until logs are green.
+- [ ] Inspect the rendered synthetic preview visually and verify its dimensions, duration, frame count, and route movement.
+- [ ] Render and inspect a genuinely licensed geographic sample; user-supplied attribution/source metadata is not proof of license validity.
+- [ ] Add a source-grounded end-to-end documentary sample with reviewed narration/subtitles and synchronization checks.
