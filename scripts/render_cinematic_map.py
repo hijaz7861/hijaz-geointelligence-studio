@@ -26,7 +26,7 @@ def main():
         scene = load_scene(args.scene)
         if not args.validate_only:
             output = render_animated_svg(scene, args.output, overwrite=args.overwrite, geojson_path=args.geojson, basemap_attribution=args.basemap_attribution, basemap_license=args.basemap_license, basemap_source_url=args.basemap_source_url)
-            print(json.dumps({"status": "RENDERED_SVG", "output": str(output), "bytes": output.stat().st_size, "map_notice": "Schematic graticule only; not a geographic basemap."}, ensure_ascii=False, indent=2))
+            print(json.dumps({"status": "RENDERED_SVG", "output": str(output), "bytes": output.stat().st_size, "map_notice": "Local GeoJSON overlay is user-supplied; source/license are displayed but not independently verified." if args.geojson else "Schematic graticule only; not a geographic basemap."}, ensure_ascii=False, indent=2))
         else:
             print(json.dumps({"status": "VALID", "scene_id": scene["scene_id"], "duration_seconds": scene["duration_seconds"]}, ensure_ascii=False, indent=2))
     except (CinematicMapError, GeoJSONOverlayError, OSError) as exc:
