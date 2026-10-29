@@ -118,14 +118,14 @@ The 1:110m layer is generalized, not a detailed boundary dataset. Natural Earth 
 
 ## Ready-to-run world map preview
 
-The repository bundles a generalized Natural Earth 1:110m world-country GeoJSON dataset at `data/geo/natural-earth-110m-countries.geojson`; source and terms are documented in `data/geo/NATURAL_EARTH_LICENSE.md`. It is appropriate for illustrative world-scale previews, not navigation, surveying, or legal-boundary analysis.
+The repository bundles a generalized Natural Earth 1:110m world-country GeoJSON dataset at `data/assets/natural_earth_110m_admin_0_countries.geojson`; source and terms are documented in `data/assets/NATURAL_EARTH_110M_NOTICE.md`. It is appropriate for illustrative world-scale previews, not navigation, surveying, or legal-boundary analysis.
 
 From the repository root, install the Python dependencies and render the bundled sample:
 
 ```sh
 python3 -m pip install -r requirements.txt
 python3 -m pip install -r requirements-media.txt
-python3 scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output artifacts/natural-earth-world-preview.svg --overwrite --geojson data/geo/natural-earth-110m-countries.geojson --basemap-attribution "Natural Earth (public-domain dataset; 1:110m Admin 0 Countries)" --basemap-license "Public domain (Natural Earth; verify current terms)" --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
+python3 scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output artifacts/natural-earth-world-preview.svg --overwrite --geojson data/assets/natural_earth_110m_admin_0_countries.geojson --basemap-attribution "Natural Earth (public-domain dataset; 1:110m Admin 0 Countries)" --basemap-license "Public domain (Natural Earth; verify current terms)" --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
 ```
 
 The data is checked into the repository and is not downloaded at run time. Attribution is rendered into the SVG. Verify current source terms before external redistribution; the bundled map is generalized and illustrative, not an authoritative GIS product.
