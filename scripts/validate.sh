@@ -257,7 +257,12 @@ if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   grep -q '"width": 1280' "$TMP_DIR/cinematic-mp4-probe.json"
   grep -q '"height": 720' "$TMP_DIR/cinematic-mp4-probe.json"
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=20' -c:a pcm_s16le -y "$TMP_DIR/cinematic-audio.wav"
-  "$PYTHON" scripts/render_video.py --video "$TMP_DIR/cinematic-scene.mp4" --audio "$TMP_DIR/cinematic-audio.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/cinematic-final.mp4" > "$TMP_DIR/cinematic-final-result.json"
+  cat > "$TMP_DIR/cinematic.srt" <<'SRT'
+1
+00:00:00,000 --> 00:00:19,900
+Synthetic cinematic subtitle smoke test.
+SRT
+  "$PYTHON" scripts/render_video.py --video "$TMP_DIR/cinematic-scene.mp4" --audio "$TMP_DIR/cinematic-audio.wav" --subtitles "$TMP_DIR/cinematic.srt" --output "$TMP_DIR/cinematic-final.mp4" > "$TMP_DIR/cinematic-final-result.json"
   grep -q '"render": "PASS"' "$TMP_DIR/cinematic-final-result.json"
   "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/cinematic-final.mp4" --require-subtitles --min-width 1280 --min-height 720 > "$TMP_DIR/cinematic-final-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/cinematic-final-validation.json"
