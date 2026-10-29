@@ -256,7 +256,16 @@ if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   grep -q '"validation": "PASS"' "$TMP_DIR/cinematic-mp4-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/cinematic-scene.mp4" > "$TMP_DIR/cinematic-mp4-streams.txt"
   grep -q 'video' "$TMP_DIR/cinematic-mp4-streams.txt"
-  printf 'PASS: frame-based cinematic MP4 rendered and its video stream validated (synthetic illustrative scene)\n'
+  ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=20' -c:a pcm_s16le -y "$TMP_DIR/cinematic-audio.wav"
+  "$PYTHON" scripts/render_video.py --video "$TMP_DIR/cinematic-scene.mp4" --audio "$TMP_DIR/cinematic-audio.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/cinematic-final.mp4" > "$TMP_DIR/cinematic-final-result.json"
+  grep -q '"render": "PASS"' "$TMP_DIR/cinematic-final-result.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/cinematic-final.mp4" --require-subtitles --min-width 1280 --min-height 720 > "$TMP_DIR/cinematic-final-validation.json"
+  grep -q '"validation": "PASS"' "$TMP_DIR/cinematic-final-validation.json"
+  ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/cinematic-final.mp4" > "$TMP_DIR/cinematic-final-streams.txt"
+  grep -q 'video' "$TMP_DIR/cinematic-final-streams.txt"
+  grep -q 'audio' "$TMP_DIR/cinematic-final-streams.txt"
+  grep -q 'subtitle' "$TMP_DIR/cinematic-final-streams.txt"
+  printf 'PASS: cinematic MP4 rendered, muxed with synthetic audio/SRT, and all three streams validated\n'
 else
   printf 'SKIP: cinematic MP4 smoke render (FFmpeg/FFprobe not installed)\n'
 fi
