@@ -1,9 +1,8 @@
 import json
-import tempfile
 import unittest
 from pathlib import Path
 
-from app.video.geojson_overlay import GeoJSONOverlayError, render_geojson_overlay
+from app.video.geojson_overlay import render_geojson_overlay
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data/geo/natural-earth-110m-countries.geojson"
@@ -22,9 +21,9 @@ class TestBundledNaturalEarthDataset(unittest.TestCase):
 
     def test_bundled_dataset_renders_with_explicit_provenance(self):
         # Use the same geographic bounds as the sample scene and assert real polygon output.
-        bounds = {"min_lon": -180, "max_lon": 180, "min_lat": -85, "max_lat": 85}
-        def project(lon, lat):
-            return (20 + (lon + 180) / 360 * 960, 20 + (85 - lat) / 170 * 540)
+        bounds = {"west": -180, "east": 180, "south": -85, "north": 85}
+        def project(lon, lat, bounds):
+            return (70 + (lon + 180) / 360 * 1140, 70 + (85 - lat) / 170 * 580)
         svg = render_geojson_overlay(
             DATA, bounds,
             attribution="Natural Earth (public-domain dataset; 1:110m Admin 0 Countries)",
