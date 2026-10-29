@@ -1,7 +1,9 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from app.video.cinematic_map import CinematicMapError, render_animated_svg, validate_scene
+from app.video.geojson_overlay import GeoJSONOverlayError
 
 def fixture():
     return {
@@ -120,6 +122,32 @@ class CinematicMapTests(unittest.TestCase):
         scene["events"][0]["illustrative"] = "false"
         with self.assertRaisesRegex(CinematicMapError, "illustrative must be a boolean"):
             validate_scene(scene)
+
+
+    def test_renders_local_geojson_overlay_with_attribution(self):
+        scene = fixture()
+        geojson = {"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            geojson_path = Path(tmp) / "land.geojson"
+            geojson_path.write_text(json.dumps(geojson), encoding="utf-8")
+            output = render_animated_svg(
+                scene, Path(tmp) / "scene.svg", geojson_path=geojson_path,
+                basemap_attribution="Synthetic test geometry",
+                basemap_license="CC0-1.0",
+                basemap_source_url="https://example.org/synthetic-geometry",
+            )
+            rendered = output.read_text(encoding="utf-8")
+        self.assertIn('id="licensed-geojson-overlay"', rendered)
+        self.assertIn("Synthetic test geometry", rendered)
+        self.assertIn("CC0-1.0", rendered)
+
+    def test_geojson_overlay_requires_license_metadata(self):
+        scene = fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            geojson_path = Path(tmp) / "land.geojson"
+            geojson_path.write_text(json.dumps({"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}), encoding="utf-8")
+            with self.assertRaisesRegex(GeoJSONOverlayError, "Basemap attribution is required"):
+                render_animated_svg(scene, Path(tmp) / "scene.svg", geojson_path=geojson_path)
 
 if __name__ == "__main__":
     unittest.main()

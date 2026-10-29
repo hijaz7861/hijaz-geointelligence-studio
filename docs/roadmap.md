@@ -69,3 +69,4 @@ The project is not production-complete until a sample documentary can be traced 
 - [ ] Inspect the rendered synthetic preview visually and verify its dimensions, duration, frame count, and route movement.
 - [ ] Render and inspect a genuinely licensed geographic sample; user-supplied attribution/source metadata is not proof of license validity.
 - [ ] Add a source-grounded end-to-end documentary sample with reviewed narration/subtitles and synchronization checks.
+- [ ] Validate the draft local GeoJSON polygon-overlay implementation in CI and with a reviewed, appropriately licensed dataset before marking map rendering complete.
