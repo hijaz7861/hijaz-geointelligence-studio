@@ -78,3 +78,22 @@ python3 scripts/render_cinematic_mp4.py \
 ```
 
 Safety and resource limits: 1–12 FPS, scene duration at most 60 seconds, at most 720 frames, explicit timeout, and no overwrite unless `--overwrite` is passed. The preview is schematic and labelled not to scale; it is not a licensed basemap and it contains no audio. Use `scripts/render_video.py` to mux separately reviewed narration and SRT subtitles. CairoSVG/FFmpeg integration, generated output quality, and the full CI run must be verified before this draft can be considered ready. A synthetic sample passing tests does not establish real-world geographic accuracy or production readiness.
+
+## Optional local GeoJSON polygon overlay
+
+
+The renderer can accept a local GeoJSON file containing a `Polygon` or `MultiPolygon` geometry, either directly or through `Feature`/`FeatureCollection`. It does not download remote data. The user must supply the data and provide all three metadata fields so the rendered SVG visibly includes attribution, license name, and an HTTPS source URL.
+
+Example:
+
+```bash
+python3 scripts/render_cinematic_map.py \\
+  --scene data/projects/sample_cinematic_scene.json \\
+  --output /tmp/scene.svg \\
+  --geojson /path/to/your-licensed-boundaries.geojson \\
+  --basemap-attribution 'Publisher or dataset attribution' \\
+  --basemap-license 'Exact license name/version' \\
+  --basemap-source-url 'https://publisher.example/dataset-page'
+```
+
+Use the exact terms supplied by the dataset publisher; do not copy this placeholder attribution into a real release. The source URL is recorded visibly but is not fetched or independently verified. Supported geometry is intentionally limited to polygon boundaries; points, lines, tiles, reprojection, and automatic clipping/generalization are not implemented. Coordinates are projected into the current schematic scene bounds and the output is still an SVG, not a cinematic MP4. Validate the dataset's license, attribution requirements, geographic suitability, and rendering quality manually before release.
