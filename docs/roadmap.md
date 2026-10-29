@@ -35,6 +35,7 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [ ] Add high-quality human/cloud narration provider for languages/voices not installed locally (Urdu is not available in the current validation environment).
 - [x] Add first-stage schematic animated SVG route preview with scene-plan validation (not a licensed basemap or MP4 output).
 - [ ] Build original graphics, licensed geographic maps, timelines, captions, and narration tracks.
+- [ ] Validate the draft local GeoJSON polygon-overlay implementation in CI and with a reviewed, appropriately licensed dataset before marking map rendering complete.
 - [x] Add an optional local FFmpeg adapter to mux existing video, narration, and selectable SRT subtitle streams; test command safety and failure handling.
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
