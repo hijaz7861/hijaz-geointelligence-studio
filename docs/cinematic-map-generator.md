@@ -61,3 +61,22 @@ The current renderer is an initial schematic graticule preview, not a complete c
 ## Validation hardening note
 
 The validator treats `illustrative` as a JSON boolean only; strings such as `"false"`, numbers, and null are invalid. If a route or event is factual (`illustrative: false`, or the flag is omitted), `source_refs` must be a non-empty JSON array of non-empty strings. Each reference should be a stable claim ID or a source URL recorded in the research ledger. This is structural validation only: it does not fetch URLs, assess source quality, or independently verify a claim. Human source review remains mandatory.
+
+
+## Optional local GeoJSON polygon overlay (draft feature)
+
+The renderer can accept a local GeoJSON file containing a `Polygon` or `MultiPolygon` geometry, either directly or through `Feature`/`FeatureCollection`. It does not download remote data. The user must supply the data and provide all three metadata fields so the rendered SVG visibly includes attribution, license name, and an HTTPS source URL.
+
+Example:
+
+```bash
+python3 scripts/render_cinematic_map.py \\
+  --scene data/projects/sample_cinematic_scene.json \\
+  --output /tmp/scene.svg \\
+  --geojson /path/to/your-licensed-boundaries.geojson \\
+  --basemap-attribution 'Publisher or dataset attribution' \\
+  --basemap-license 'Exact license name/version' \\
+  --basemap-source-url 'https://publisher.example/dataset-page'
+```
+
+Use the exact terms supplied by the dataset publisher; do not copy this placeholder attribution into a real release. The source URL is recorded visibly but is not fetched or independently verified. Supported geometry is intentionally limited to polygon boundaries; points, lines, tiles, reprojection, and automatic clipping/generalization are not implemented. Coordinates are projected into the current schematic scene bounds and the output is still an SVG, not a cinematic MP4. Validate the dataset's license, attribution requirements, geographic suitability, and rendering quality manually before release.
