@@ -82,3 +82,5 @@ The project is not production-complete until a sample documentary can be traced 
 - [x] Inspect the CI poster and frames at 0s, 10s, and 19s; route movement and the split attribution/license/source footer are visible. Independent editor approval remains outstanding.
 - [ ] Independently review publisher terms and geographic limitations; do not treat bundled source notes or CLI metadata as legal verification.
 - [ ] Complete a source-grounded documentary with reviewed narration, subtitles, audio synchronization, rights-cleared assets, and human approval.
+
+- CI artifact contents: poster PNG, visuals-only MP4, and muxed synthetic audio/SRT MP4; synthetic tracks are validation fixtures, not documentary narration.
