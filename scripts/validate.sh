@@ -46,6 +46,12 @@ grep -q -- '--require-subtitles' "$TMP_DIR/render-validation-help.txt"
 grep -q -- '--max-items-per-feed' "$TMP_DIR/feed-help.txt"
 "$PYTHON" scripts/build_release_bundle.py --help > "$TMP_DIR/release-bundle-help.txt"
 grep -q -- '--subtitles' "$TMP_DIR/release-bundle-help.txt"
+grep -q -- '--approval-receipts' "$TMP_DIR/release-bundle-help.txt"
+grep -q -- '--approval-key-file' "$TMP_DIR/release-bundle-help.txt"
+"$PYTHON" scripts/init_approval_key.py --help > "$TMP_DIR/approval-key-help.txt"
+grep -q -- '--output' "$TMP_DIR/approval-key-help.txt"
+"$PYTHON" scripts/record_approval.py --help > "$TMP_DIR/approval-record-help.txt"
+grep -q -- '--stage' "$TMP_DIR/approval-record-help.txt"
 printf 'PASS: all CLI help screens\n'
 printf '\n[4/22] Source CLI add + duplicate rejection smoke test\n'
 "$PYTHON" scripts/add_source.py \
@@ -298,5 +304,29 @@ SRT
 else
   printf 'SKIP: cinematic MP4 smoke render (FFmpeg/FFprobe not installed)\n'
 fi
+
+printf '\n[23/23] Tamper-evident approval receipt CLI smoke test\n'
+mkdir -p "$TMP_DIR/approval"
+"$PYTHON" scripts/init_approval_key.py --output "$TMP_DIR/approval/approval.key" > "$TMP_DIR/approval-key-result.json"
+printf 'Synthetic reviewed MP4 fixture.\\n' > "$TMP_DIR/approval/review.mp4"
+for approval_stage in script_reviewed translation_reviewed media_rights_reviewed; do
+  "$PYTHON" scripts/record_approval.py \
+    --project data/projects/sample_project.json \
+    --receipts "$TMP_DIR/approval/receipts.json" \
+    --key-file "$TMP_DIR/approval/approval.key" \
+    --stage "$approval_stage" --decision approved \
+    --reviewer 'CI synthetic reviewer' \
+    --reason 'Synthetic validation receipt only.' > /dev/null
+done
+"$PYTHON" scripts/record_approval.py \
+  --project data/projects/sample_project.json \
+  --receipts "$TMP_DIR/approval/receipts.json" \
+  --key-file "$TMP_DIR/approval/approval.key" \
+  --stage final_video_reviewed --decision approved \
+  --reviewer 'CI synthetic reviewer' \
+  --reason 'Synthetic validation receipt only.' \
+  --artifact "$TMP_DIR/approval/review.mp4" > /dev/null
+grep -q 'final_video_reviewed' "$TMP_DIR/approval/receipts.json"
+printf 'PASS: owner-only key generated and four project-bound synthetic receipts recorded\\n'
 
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
