@@ -14,7 +14,7 @@ Create a JSON evidence report for editorial review. The report is always blocked
       --min-width 1280 --min-height 720 \
       --output artifacts/reports/release-evidence.json
 
-The bundle records SHA-256 hashes and sizes for provided input files, maps project claims to source-ledger metadata, captures media-rights fields, checks video/audio/embedded-subtitle streams with ffprobe, validates the sidecar SRT, and compares the final cue end against both the container and audio-stream durations (250 ms tolerance). A missing audio-stream duration or a subtitle overrun becomes a blocker.
+The bundle records SHA-256 hashes and sizes for provided input files, maps project claims to source-ledger metadata, and emits a `citation_validation` summary with resolved/unresolved ledger references. It captures media-rights fields, checks video/audio/embedded-subtitle streams with ffprobe, validates the sidecar SRT, and compares the final cue end against both the container and audio-stream durations (250 ms tolerance). A missing audio-stream duration or a subtitle overrun becomes a blocker.
 
 ## Tamper-evident human review receipts
 
