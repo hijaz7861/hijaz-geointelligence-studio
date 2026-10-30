@@ -308,7 +308,7 @@ fi
 printf '\n[23/23] Tamper-evident approval receipt CLI smoke test\n'
 mkdir -p "$TMP_DIR/approval"
 "$PYTHON" scripts/init_approval_key.py --output "$TMP_DIR/approval/approval.key" > "$TMP_DIR/approval-key-result.json"
-printf 'Synthetic reviewed MP4 fixture.\\n' > "$TMP_DIR/approval/review.mp4"
+printf 'Synthetic reviewed MP4 fixture.\n' > "$TMP_DIR/approval/review.mp4"
 for approval_stage in script_reviewed translation_reviewed media_rights_reviewed; do
   "$PYTHON" scripts/record_approval.py \
     --project data/projects/sample_project.json \
