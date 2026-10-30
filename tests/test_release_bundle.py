@@ -8,6 +8,7 @@ from unittest.mock import patch
 from app.publishing.release_bundle import ReleaseBundleError, build_release_bundle, sha256_file, write_release_bundle
 from app.research.source_ledger import add_source
 from app.research.claim_ledger import add_claim
+from app.publishing.approval_receipts import APPROVAL_STAGES, create_approval_key, record_approval
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE={"title":"Synthetic report","url":"https://example.org/report","published_at":"2026-10-20","source_type":"independent_reporting","claim_status":"independent_reporting","notes":"Synthetic fixture only."}
 CLAIM={"claim":"Synthetic documentary claim","status":"independent_reporting","source_urls":[SOURCE["url"]],"notes":"Fixture only."}
@@ -20,7 +21,7 @@ class ReleaseBundleTests(unittest.TestCase):
   self.srt=self.root/'final.srt'; self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nSynthetic caption.\n',encoding='utf-8')
   self.metadata=self.root/'metadata.json'; self.metadata.write_text(json.dumps({'publish_ready':False,'release_blockers':['Human approval missing']}),encoding='utf-8')
  def tearDown(self): self.temp.cleanup()
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
  def test_bundle_hashes_inputs_and_never_marks_publish_ready(self,probe):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertEqual(bundle['structural_validation'],'PASS'); self.assertFalse(bundle['publish_ready']); self.assertEqual(bundle['render_validation']['validation'],'PASS')
@@ -30,12 +31,40 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
   probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,min_width=1280,min_height=720)
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
+  self.assertEqual(bundle['citation_validation']['validation'],'LEDGER_LINKAGE_ONLY')
+  self.assertEqual(bundle['citation_validation']['source_references_in_ledger'],1)
+  self.assertEqual(bundle['citation_validation']['unresolved_source_references'],0)
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
  def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):
   self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past render.\n',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertFalse(bundle['subtitle_validation']['timeline_within_render'])
   self.assertTrue(any('Subtitle timeline exceeds rendered video duration by 1000 ms.' in item for item in bundle['release_blockers']))
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':2.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':0.5})
+ def test_subtitle_timeline_beyond_audio_duration_is_blocked(self,probe):
+  self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nCaption extends beyond audio.\n',encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
+  self.assertFalse(bundle['subtitle_validation']['timeline_within_audio'])
+  self.assertTrue(any('Subtitle timeline exceeds audio stream duration by 500 ms.' in item for item in bundle['release_blockers']))
+
+ def test_approval_receipts_are_required_and_reported(self):
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  self.assertEqual(bundle['human_approval_record']['receipt_validation']['validation'],'NOT_VERIFIED')
+  self.assertTrue(any('Tamper-evident human approval receipts' in item for item in bundle['release_blockers']))
+
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
+ def test_valid_approval_receipts_are_included_but_never_authorize_publish(self,probe):
+  project={**PROJECT,'approval':{'script_reviewed':True,'translation_reviewed':True,'media_rights_reviewed':True,'final_video_reviewed':True,'approved_by':'Human reviewer'}}
+  self.project.write_text(json.dumps(project),encoding='utf-8')
+  key=create_approval_key(self.root/'private'/'approval.key')
+  receipts=self.root/'approval-receipts.json'
+  for stage in APPROVAL_STAGES:
+   record_approval(self.project,receipts,key,stage=stage,decision='approved',reviewer='Human reviewer',reason='Reviewed the relevant project materials.',artifact_path=self.video if stage=='final_video_reviewed' else None,reviewed_at='2026-10-30T03:00:00Z')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata,approval_receipts_path=receipts,approval_key_path=key)
+  self.assertEqual(bundle['human_approval_record']['receipt_validation']['validation'],'PASS')
+  self.assertFalse(bundle['publish_ready'])
+  self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
+
  def test_missing_render_subtitle_and_metadata_are_blockers(self):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertTrue(any('rendered video is missing' in item.lower() for item in bundle['release_blockers']))

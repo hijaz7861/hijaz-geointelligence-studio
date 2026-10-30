@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, Mock
 from app.video.render_validator import RenderValidationError, inspect_rendered_video
-PROBE={'streams':[{'codec_type':'video','codec_name':'h264','width':1920,'height':1080},{'codec_type':'audio','codec_name':'aac'},{'codec_type':'subtitle','codec_name':'mov_text'}],'format':{'duration':'12.5'}}
+PROBE={'streams':[{'codec_type':'video','codec_name':'h264','width':1920,'height':1080},{'codec_type':'audio','codec_name':'aac','duration':'12.4'},{'codec_type':'subtitle','codec_name':'mov_text'}],'format':{'duration':'12.5'}}
 class RenderValidatorTests(unittest.TestCase):
  def setUp(self): self.temp=tempfile.TemporaryDirectory(); self.file=Path(self.temp.name)/'render.mp4'; self.file.write_bytes(b'fixture')
  def tearDown(self): self.temp.cleanup()
@@ -13,7 +13,7 @@ class RenderValidatorTests(unittest.TestCase):
  def test_accepts_required_streams(self,run,which):
   run.return_value=Mock(returncode=0,stdout=json.dumps(PROBE),stderr='')
   result=inspect_rendered_video(self.file,require_subtitles=True,min_width=1280,min_height=720)
-  self.assertEqual(result['validation'],'PASS'); self.assertEqual(result['subtitle_stream_count'],1)
+  self.assertEqual(result['validation'],'PASS'); self.assertEqual(result['subtitle_stream_count'],1); self.assertEqual(result['audio_duration_seconds'],12.4)
  @patch('app.video.render_validator.shutil.which',return_value='/usr/bin/ffprobe')
  @patch('app.video.render_validator.subprocess.run')
  def test_rejects_missing_audio(self,run,which):

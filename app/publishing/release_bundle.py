@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 from app.editorial.script_validator import ProjectValidationError, release_blockers, validate_project_file
+from app.publishing.approval_receipts import ApprovalReceiptError, verify_approval_receipts
 from app.research.claim_ledger import DEFAULT_CLAIMS, ClaimLedgerError, load_claims
 from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
 from app.video.render_validator import RenderValidationError, inspect_rendered_video
@@ -22,7 +23,7 @@ def _file_evidence(path: str | Path | None, label: str) -> dict[str, Any]:
     item=Path(path).expanduser().resolve()
     if not item.is_file(): return {"label":label,"provided":True,"exists":False,"path":str(item),"sha256":None,"size_bytes":None}
     return {"label":label,"provided":True,"exists":True,"path":str(item),"sha256":sha256_file(item),"size_bytes":item.stat().st_size}
-def build_release_bundle(project_path: str | Path, *, source_path: str | Path = DEFAULT_LEDGER, claims_path: str | Path | None = None, render_path: str | Path | None = None, subtitle_path: str | Path | None = None, metadata_path: str | Path | None = None, min_width: int = 1280, min_height: int = 720) -> dict[str, Any]:
+def build_release_bundle(project_path: str | Path, *, source_path: str | Path = DEFAULT_LEDGER, claims_path: str | Path | None = None, render_path: str | Path | None = None, subtitle_path: str | Path | None = None, metadata_path: str | Path | None = None, approval_receipts_path: str | Path | None = None, approval_key_path: str | Path | None = None, min_width: int = 1280, min_height: int = 720) -> dict[str, Any]:
     blockers: list[str]=[]
     try:
         project=validate_project_file(project_path,claims_path,source_path)
@@ -45,6 +46,16 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
             refs.append({"url":url,"in_source_ledger":source is not None,"title":source.get("title") if source else None,"source_type":source.get("source_type") if source else None,"published_at":source.get("published_at") if source else None})
             if source is None: blockers.append(f"Claim source is missing from source ledger: {url}")
         claim_evidence.append({"claim":text,"status":claim.get("status"),"sources":refs,"notes":"Source linkage is metadata evidence, not independent factual verification."})
+    citation_refs=[source for claim in claim_evidence for source in claim["sources"]]
+    citation_validation={
+        "validation":"LEDGER_LINKAGE_ONLY",
+        "project_claim_count":len(project.get("claim_ids",[])),
+        "linked_claim_count":len(claim_evidence),
+        "source_reference_count":len(citation_refs),
+        "source_references_in_ledger":sum(1 for item in citation_refs if item["in_source_ledger"]),
+        "unresolved_source_references":sum(1 for item in citation_refs if not item["in_source_ledger"]),
+        "note":"This checks reference-to-ledger linkage and metadata only; it does not fetch source content, assess source quality, or prove claim support or truth.",
+    }
     media_evidence=[]
     for asset in project.get("media_assets",[]):
         rights=asset.get("rights_status")
@@ -62,6 +73,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         _file_evidence(render_path,"rendered_video"),
         _file_evidence(subtitle_path,"subtitle_file"),
         _file_evidence(metadata_path,"youtube_metadata_draft"),
+        _file_evidence(approval_receipts_path,"approval_receipts"),
     ]
     render_report=None
     if render_path is None or not Path(render_path).expanduser().is_file():
@@ -94,6 +106,17 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
                     if not timeline_within_render:
                         overrun_ms = subtitle_duration_ms - render_duration_ms
                         blockers.append(f"Subtitle timeline exceeds rendered video duration by {overrun_ms} ms.")
+                    audio_duration_seconds = render_report.get("audio_duration_seconds") if isinstance(render_report, dict) else None
+                    if isinstance(audio_duration_seconds, bool) or not isinstance(audio_duration_seconds, (int, float)) or not math.isfinite(float(audio_duration_seconds)) or audio_duration_seconds <= 0:
+                        blockers.append("Audio stream duration is unavailable; subtitle-to-audio timeline cannot be checked.")
+                    else:
+                        audio_duration_ms = round(float(audio_duration_seconds) * 1000)
+                        timeline_within_audio = subtitle_duration_ms <= audio_duration_ms + 250
+                        subtitle_report["audio_duration_ms"] = audio_duration_ms
+                        subtitle_report["timeline_within_audio"] = timeline_within_audio
+                        if not timeline_within_audio:
+                            overrun_ms = subtitle_duration_ms - audio_duration_ms
+                            blockers.append(f"Subtitle timeline exceeds audio stream duration by {overrun_ms} ms.")
         except (SubtitleValidationError,OSError) as exc: blockers.append(f"Subtitle validation failed: {exc}")
     if metadata_path is None or not Path(metadata_path).expanduser().is_file():
         blockers.append("YouTube metadata draft is missing.")
@@ -108,17 +131,27 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     if not project.get("media_assets"): blockers.append("No media assets are listed in the project manifest.")
     approval=project.get("approval",{})
     human_approval={key:approval.get(key) for key in ("script_reviewed","translation_reviewed","media_rights_reviewed","final_video_reviewed","approved_by")}
+    approval_report={"validation":"NOT_VERIFIED","note":"Supply both a receipts file and a protected HMAC key file to verify project-bound approvals."}
+    if approval_receipts_path is None or approval_key_path is None:
+        blockers.append("Tamper-evident human approval receipts are not verified; provide both --approval-receipts and --approval-key-file.")
+    else:
+        try:
+            approval_report=verify_approval_receipts(project_path,approval_receipts_path,approval_key_path,render_path=render_path)
+        except (ApprovalReceiptError,OSError,ValueError) as exc:
+            approval_report={"validation":"FAIL","error":str(exc)}
+            blockers.append(f"Approval receipt verification failed: {exc}")
+    human_approval["receipt_validation"]=approval_report
     blockers.append("This evidence bundle is a review artifact only; it never grants permission to publish or upload.")
     return {
       "schema_version":"1.0","project_id":project["project_id"],"title":project["title"],"language":project["language"],
       "created_utc_note":"Timestamp intentionally omitted to keep the evidence report reproducible for identical inputs.",
       "structural_validation":"PASS","publish_ready":False,"release_status":"draft_blocked",
       "release_blockers":list(dict.fromkeys(blockers)),"input_files":inputs,
-      "claim_evidence":claim_evidence,"media_rights_evidence":media_evidence,
+      "claim_evidence":claim_evidence,"citation_validation":citation_validation,"media_rights_evidence":media_evidence,
       "render_validation":render_report,"subtitle_validation":subtitle_report,
       "human_approval_record":human_approval,
       "counts":{"source_records":len(sources),"claim_records":len(claims),"linked_claims":len(claim_evidence),"media_assets":len(media_evidence)},
-      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","Human approval is recorded from project metadata and is not authenticated by this tool.","This bundle does not publish, upload, or authorize public release."]
+      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","HMAC receipts protect record integrity and show shared-key possession; reviewer identity remains self-asserted and is not independently authenticated.","This bundle does not publish, upload, or authorize public release."]
     }
 def write_release_bundle(bundle: dict[str, Any], output_path: str | Path, *, overwrite: bool = False) -> Path:
     output=Path(output_path).expanduser().resolve()
