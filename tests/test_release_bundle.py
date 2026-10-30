@@ -31,6 +31,9 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
   probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,min_width=1280,min_height=720)
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
+  self.assertEqual(bundle['citation_validation']['validation'],'LEDGER_LINKAGE_ONLY')
+  self.assertEqual(bundle['citation_validation']['source_references_in_ledger'],1)
+  self.assertEqual(bundle['citation_validation']['unresolved_source_references'],0)
  @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
  def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):
   self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past render.\n',encoding='utf-8')
