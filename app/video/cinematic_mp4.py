@@ -10,6 +10,7 @@ import xml.sax.saxutils as xml
 from pathlib import Path
 
 from app.video.cinematic_map import CinematicMapError, _xy, render_animated_svg, validate_scene
+from app.video.geojson_overlay import GeoJSONOverlayError
 
 
 class CinematicMP4Error(RuntimeError):
@@ -70,12 +71,28 @@ def _frame_svg(template, scene, seconds):
     return result
 
 
-def render_cinematic_mp4(scene, output_path, *, fps=5, overwrite=False, timeout_seconds=300):
+def render_cinematic_mp4(
+    scene, output_path, *, fps=5, overwrite=False, timeout_seconds=300,
+    geojson_path=None, basemap_attribution=None, basemap_license=None,
+    basemap_source_url=None,
+):
     """Render a reviewed scene to MP4; defaults are bounded for low-cost preview use."""
     try:
         validate_scene(scene)
     except CinematicMapError as exc:
         raise CinematicMP4Error(f"Invalid scene: {exc}") from exc
+    basemap_fields = (
+        ("Basemap attribution", basemap_attribution),
+        ("Basemap license", basemap_license),
+        ("Basemap source URL", basemap_source_url),
+    )
+    if geojson_path is None:
+        if any(value is not None for _, value in basemap_fields):
+            raise CinematicMP4Error("Basemap metadata requires a local GeoJSON overlay.")
+    else:
+        for label, value in basemap_fields:
+            if not isinstance(value, str) or not value.strip():
+                raise CinematicMP4Error(f"{label} is required when a GeoJSON overlay is enabled.")
     if isinstance(fps, bool) or not isinstance(fps, int) or not 1 <= fps <= 12:
         raise CinematicMP4Error("fps must be an integer from 1 to 12.")
     if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, int) or not 1 <= timeout_seconds <= 1800:
@@ -104,7 +121,15 @@ def render_cinematic_mp4(scene, output_path, *, fps=5, overwrite=False, timeout_
     temp_output = temp_root / "render.mp4"
     try:
         template_path = temp_root / "template.svg"
-        render_animated_svg(scene, template_path)
+        try:
+            render_animated_svg(
+                scene, template_path, geojson_path=geojson_path,
+                basemap_attribution=basemap_attribution,
+                basemap_license=basemap_license,
+                basemap_source_url=basemap_source_url,
+            )
+        except (CinematicMapError, GeoJSONOverlayError) as exc:
+            raise CinematicMP4Error(f"Could not render map template: {exc}") from exc
         template = template_path.read_text(encoding="utf-8")
         for index in range(frame_count):
             seconds = index / fps

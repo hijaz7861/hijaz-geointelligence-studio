@@ -138,10 +138,28 @@ class CinematicMapTests(unittest.TestCase):
             )
             rendered = output.read_text(encoding="utf-8")
         self.assertIn('id="licensed-geojson-overlay"', rendered)
-        self.assertIn("Synthetic test geometry", rendered)
-        self.assertIn("CC0-1.0", rendered)
+        self.assertIn('id="geojson-attribution"', rendered)
+        self.assertIn('id="geojson-license"', rendered)
+        self.assertIn('id="geojson-source"', rendered)
+        self.assertIn("Attribution: Synthetic test geometry", rendered)
+        self.assertIn("License: CC0-1.0", rendered)
+        self.assertIn("Source: https://example.org/synthetic-geometry", rendered)
         self.assertIn("GEOGRAPHIC BOUNDARIES", rendered)
         self.assertNotIn("SCHEMATIC MAP • NOT TO SCALE", rendered)
+
+
+    def test_geojson_overlay_rejects_overlong_footer_metadata(self):
+        scene = fixture()
+        geojson = {"type": "Polygon", "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            geojson_path = Path(tmp) / "land.geojson"
+            geojson_path.write_text(json.dumps(geojson), encoding="utf-8")
+            with self.assertRaisesRegex(GeoJSONOverlayError, "attribution must be 160 characters or fewer"):
+                render_animated_svg(
+                    scene, Path(tmp) / "scene.svg", geojson_path=geojson_path,
+                    basemap_attribution="A" * 161, basemap_license="CC0-1.0",
+                    basemap_source_url="https://example.org/synthetic-geometry",
+                )
 
     def test_geojson_overlay_requires_license_metadata(self):
         scene = fixture()

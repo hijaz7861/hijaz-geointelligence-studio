@@ -1,3 +1,4 @@
+import json
 import sys
 import tempfile
 import types
@@ -54,6 +55,57 @@ class CinematicMP4Tests(unittest.TestCase):
         self.assertNotIn("<animateMotion", frame)
         self.assertIn('transform="translate(640.0 215.0)"', frame)
         self.assertIn("Illustrative marker", frame)
+
+
+    def test_rejects_basemap_metadata_without_geojson(self):
+        with self.assertRaisesRegex(CinematicMP4Error, "requires a local GeoJSON overlay"):
+            render_cinematic_mp4(
+                fixture(), self.output, basemap_attribution="Synthetic attribution"
+            )
+
+    def test_geojson_overlay_requires_complete_metadata_before_media_tools(self):
+        geojson_path = self.root / "land.geojson"
+        geojson_path.write_text(json.dumps({
+            "type": "Polygon",
+            "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]],
+        }), encoding="utf-8")
+        with self.assertRaisesRegex(CinematicMP4Error, "Basemap attribution is required"):
+            render_cinematic_mp4(fixture(), self.output, geojson_path=geojson_path)
+
+    def test_renders_geojson_overlay_into_every_mp4_frame(self):
+        geojson_path = self.root / "land.geojson"
+        geojson_path.write_text(json.dumps({
+            "type": "Polygon",
+            "coordinates": [[[-5, -5], [5, -5], [5, 5], [-5, 5], [-5, -5]]],
+        }), encoding="utf-8")
+        rendered_frames = []
+
+        def fake_svg2png(**kwargs):
+            rendered_frames.append(kwargs["bytestring"].decode("utf-8"))
+            Path(kwargs["write_to"]).write_bytes(b"png")
+
+        def fake_ffmpeg(command, **kwargs):
+            Path(command[-1]).write_bytes(b"synthetic mp4")
+            return Mock(returncode=0, stderr="")
+
+        with patch.dict(sys.modules, {"cairosvg": types.SimpleNamespace(svg2png=fake_svg2png)}):
+            with patch("app.video.cinematic_mp4.shutil.which", return_value="/usr/bin/ffmpeg"):
+                with patch("app.video.cinematic_mp4.subprocess.run", side_effect=fake_ffmpeg):
+                    result = render_cinematic_mp4(
+                        fixture(), self.output, fps=1, geojson_path=geojson_path,
+                        basemap_attribution="Test & Attribution",
+                        basemap_license="CC0-1.0",
+                        basemap_source_url="https://example.org/synthetic-map",
+                    )
+
+        self.assertEqual(result, self.output.resolve())
+        self.assertEqual(len(rendered_frames), fixture()["duration_seconds"])
+        for frame in rendered_frames:
+            self.assertIn('id="licensed-geojson-overlay"', frame)
+            self.assertIn("GEOGRAPHIC BOUNDARIES", frame)
+            self.assertIn("Test &amp; Attribution", frame)
+            self.assertIn("CC0-1.0", frame)
+            self.assertIn("https://example.org/synthetic-map", frame)
 
     def test_rejects_invalid_fps(self):
         with self.assertRaisesRegex(CinematicMP4Error, "fps must"):

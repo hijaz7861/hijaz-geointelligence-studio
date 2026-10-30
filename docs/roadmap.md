@@ -61,12 +61,26 @@ This repository is an evolving MVP, not a completed production system. A phase i
 The project is not production-complete until a sample documentary can be traced end-to-end from sources to claims to a cited multilingual script to rights-cleared assets to a rendered video, with a human approval record and a reproducible test report. A passing unit-test suite alone is not completion.
 
 
-## Current draft branch — cinematic MP4 rendering
+## Main cinematic MP4 renderer — 2026-10-30
 
-- [x] Add a bounded frame-based renderer prototype that positions route markers explicitly per frame and encodes visuals-only MP4 through FFmpeg.
-- [x] Add CLI, interpolation/safety unit tests, a CairoSVG media dependency pin, and a CI smoke-render stage.
-- [ ] Confirm the new branch passes the full GitHub Actions workflow; do not mark this stage verified until logs are green.
-- [ ] Inspect the rendered synthetic preview visually and verify its dimensions, duration, frame count, and route movement.
-- [ ] Render and inspect a genuinely licensed geographic sample; user-supplied attribution/source metadata is not proof of license validity.
-- [ ] Add a source-grounded end-to-end documentary sample with reviewed narration/subtitles and synchronization checks.
-- [ ] Validate the draft local GeoJSON polygon-overlay implementation in CI and with a reviewed, appropriately licensed dataset before marking map rendering complete.
+- [x] Add a bounded frame-based renderer that positions route markers explicitly per frame and encodes visuals-only MP4 through FFmpeg.
+- [x] Add CLI, interpolation/safety unit tests, CairoSVG media dependency pin, and CI smoke-render stage.
+- [x] Add optional local GeoJSON overlay rendering into every MP4 frame with visible attribution/license/source fields and fail-closed metadata limits.
+- [x] GitHub Actions on PR #12 head `f00888913bff7cf9a98886444dc1654a33b228da`: 162 unit tests and all 22 validation stages passed.
+- [x] CI artifact generated; poster and 0s/10s/19s frames visually inspected for route movement, geographic overlay, and footer placement.
+- [ ] Independent editor review of the actual MP4, factual claims, source support, and geographic boundary treatment.
+- [ ] Independently review publisher terms and legal suitability; source notes and supplied CLI metadata are not legal verification.
+- [ ] Complete a source-grounded documentary with reviewed narration, subtitles, audio synchronization, rights-cleared assets, and human approval.
+
+## GeoJSON-aware cinematic MP4 follow-up — 2026-10-30
+
+- [x] Extend the deterministic frame renderer to rasterize the existing bounded local GeoJSON Polygon/MultiPolygon overlay into every MP4 frame.
+- [x] Expose overlay path, visible attribution, license statement, and HTTPS source URL through the MP4 CLI; report the supplied metadata as not independently verified.
+- [x] Add regression coverage for overlay presence in every frame and fail-closed metadata requirements.
+- [x] Extend the full validation script to render the bundled Natural Earth dataset through the MP4 path and retain a review poster plus muxed synthetic audio/SRT artifact.
+- [x] Confirm PR #12 GitHub Actions passed: 162 unit tests and all 22 validation stages.
+- [x] Inspect the CI poster and frames at 0s, 10s, and 19s; route movement and the split attribution/license/source footer are visible. Independent editor approval remains outstanding.
+- [ ] Independently review publisher terms and geographic limitations; do not treat bundled source notes or CLI metadata as legal verification.
+- [ ] Complete a source-grounded documentary with reviewed narration, subtitles, audio synchronization, rights-cleared assets, and human approval.
+
+- CI artifact contents: poster PNG, visuals-only MP4, and muxed synthetic audio/SRT MP4; synthetic tracks are validation fixtures, not documentary narration.

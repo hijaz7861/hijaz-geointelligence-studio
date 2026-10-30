@@ -86,9 +86,16 @@ def load_geojson_polygons(path):
 
 def render_geojson_overlay(path, bounds, *, attribution, license_name, source_url, project):
     """Return SVG for local polygon data and a visible, escaped attribution footer."""
-    for label, value in (("attribution", attribution), ("license", license_name), ("source URL", source_url)):
+    metadata_fields = (
+        ("attribution", attribution, 160),
+        ("license", license_name, 160),
+        ("source URL", source_url, 240),
+    )
+    for label, value, max_chars in metadata_fields:
         if not isinstance(value, str) or not value.strip():
             raise GeoJSONOverlayError(f"Basemap {label} is required when GeoJSON is enabled.")
+        if len(value) > max_chars:
+            raise GeoJSONOverlayError(f"Basemap {label} must be {max_chars} characters or fewer so the on-screen footer remains readable.")
     parsed = urlparse(source_url)
     if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
         raise GeoJSONOverlayError("Basemap source URL must be an HTTPS URL without embedded credentials.")
@@ -115,8 +122,15 @@ def render_geojson_overlay(path, bounds, *, attribution, license_name, source_ur
         paths.append('<path d="' + xml.escape(" ".join(ring_paths)) + '" fill="#173d45" stroke="#5b9b91" stroke-width="1.5" fill-rule="evenodd"/>')
     if not paths:
         raise GeoJSONOverlayError("GeoJSON overlay contains no polygon geometry.")
-    footer = xml.escape(f"Basemap: {attribution} | {license_name} | {source_url}")
+    attribution_line = xml.escape(f"Attribution: {attribution}")
+    license_line = xml.escape(f"License: {license_name}")
+    source_line = xml.escape(f"Source: {source_url}")
+    footer = (
+        f'<text id="geojson-attribution" x="70" y="694" fill="#c1d7d3" font-size="8" font-family="sans-serif">{attribution_line}</text>'
+        f'<text id="geojson-license" x="70" y="704" fill="#c1d7d3" font-size="8" font-family="sans-serif">{license_line}</text>'
+        f'<text id="geojson-source" x="70" y="714" fill="#c1d7d3" font-size="8" font-family="sans-serif">{source_line}</text>'
+    )
     return ('<defs><clipPath id="geojson-map-viewport"><rect x="70" y="70" width="1140" height="580"/></clipPath></defs>'
             + '<g id="licensed-geojson-overlay" clip-path="url(#geojson-map-viewport)">'
             + "".join(paths) + '</g>'
-            + f'<text x="70" y="704" fill="#c1d7d3" font-size="10" font-family="sans-serif">{footer}</text>')
+            + footer)
