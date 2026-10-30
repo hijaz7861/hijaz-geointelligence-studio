@@ -29,7 +29,7 @@ python3 scripts/render_cinematic_mp4.py \
   --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
 ```
 
-The renderer validates the scene and bounded local GeoJSON input, renders the geographic overlay and supplied metadata into each SVG frame, rasterizes frames, and encodes the MP4. The overlay path is local-only; the renderer does not download data from the source URL. Attribution, license text, and an HTTPS source URL are required when `--geojson` is supplied. Metadata without a GeoJSON file is rejected.
+The renderer validates the scene and bounded local GeoJSON input, renders the geographic overlay and supplied metadata into each SVG frame, rasterizes frames, and encodes the MP4. The footer places attribution, license, and source on separate lines; overlong metadata is rejected instead of silently clipped. The overlay path is local-only; the renderer does not download data from the source URL. Attribution, license text, and an HTTPS source URL are required when `--geojson` is supplied. Metadata without a GeoJSON file is rejected.
 
 The renderer remains bounded (1–12 FPS, at most 60 seconds and 720 frames) and refuses to overwrite an existing output unless `--overwrite` is explicitly supplied. The output is visuals-only. To add separately reviewed narration and selectable SRT subtitles, use `scripts/render_video.py`, then run `scripts/validate_render.py --require-subtitles`.
 
