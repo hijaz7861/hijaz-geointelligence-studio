@@ -52,10 +52,12 @@ Create a repeatable, local-first visual-production component for historical and 
 - [x] Initial Python scene validator and deterministic SVG animation CLI.
 - [x] Illustrative sample scene and unit tests for bounds, references, timestamps, and overwrite protection.
 - [x] CI execution verified on 2026-10-28: 126 unit tests and all 20 repository validation stages passed in GitHub Actions.
-- [ ] Licensed geographic basemap, camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and cinematic-map MP4 renderer integration remain unimplemented.
-- [ ] A source-grounded, human-reviewed geographic sample still needs to be rendered and inspected.
+- [x] Bundled generalized Natural Earth 1:110m GeoJSON and optional local Polygon/MultiPolygon overlays in SVG and frame-based MP4 renders; supplied rights statements remain subject to human legal review.
+- [x] Deterministic bounded 1280×720 MP4 renderer with visible overlay attribution/license/source footer; narration and SRT remain separate mux inputs.
+- [ ] Camera moves, richer sprites, reusable effects, subtitle/audio synchronization metrics, a source-grounded editorial sample, and human visual/legal review remain outstanding.
+- [ ] Human visual inspection of the generated Natural Earth MP4 and a source-grounded, human-reviewed scene remain outstanding.
 
-The current renderer is an initial schematic graticule preview, not a complete cinematic map product. A passing CI run verifies the scripted checks, but does not make the cinematic map feature production-ready.
+The renderer supports schematic graticule previews and optional local GeoJSON overlays in SVG and MP4. Neither mode is a complete cinematic map product until factual, visual, licensing, narration, subtitle, and human-approval gates are satisfied. A passing CI run verifies the scripted checks, but does not make the cinematic map feature production-ready.
 
 
 ## Validation hardening note

@@ -70,3 +70,15 @@ The project is not production-complete until a sample documentary can be traced 
 - [ ] Render and inspect a genuinely licensed geographic sample; user-supplied attribution/source metadata is not proof of license validity.
 - [ ] Add a source-grounded end-to-end documentary sample with reviewed narration/subtitles and synchronization checks.
 - [ ] Validate the draft local GeoJSON polygon-overlay implementation in CI and with a reviewed, appropriately licensed dataset before marking map rendering complete.
+
+
+## GeoJSON-aware cinematic MP4 follow-up — 2026-10-30
+
+- [x] Extend the deterministic frame renderer to rasterize the existing bounded local GeoJSON Polygon/MultiPolygon overlay into every MP4 frame.
+- [x] Expose overlay path, visible attribution, license statement, and HTTPS source URL through the MP4 CLI; report the supplied metadata as not independently verified.
+- [x] Add regression coverage for overlay presence in every frame and fail-closed metadata requirements.
+- [x] Extend the full validation script to render the bundled Natural Earth dataset through the MP4 path and retain a review poster plus muxed synthetic audio/SRT artifact.
+- [ ] Confirm the new draft PR's complete GitHub Actions run passes.
+- [ ] Visually inspect the actual MP4 poster/preview and check map placement, legibility, route motion, and attribution.
+- [ ] Independently review publisher terms and geographic limitations; do not treat bundled source notes or CLI metadata as legal verification.
+- [ ] Complete a source-grounded documentary with reviewed narration, subtitles, audio synchronization, rights-cleared assets, and human approval.

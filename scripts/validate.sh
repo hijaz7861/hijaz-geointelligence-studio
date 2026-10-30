@@ -26,6 +26,10 @@ grep -q -- '--subtitles' "$TMP_DIR/render-help.txt"
 grep -q -- '--scene' "$TMP_DIR/cinematic-map-help.txt"
 "$PYTHON" scripts/render_cinematic_mp4.py --help > "$TMP_DIR/cinematic-mp4-help.txt"
 grep -q -- '--fps' "$TMP_DIR/cinematic-mp4-help.txt"
+grep -q -- '--geojson' "$TMP_DIR/cinematic-mp4-help.txt"
+grep -q -- '--basemap-attribution' "$TMP_DIR/cinematic-mp4-help.txt"
+grep -q -- '--basemap-license' "$TMP_DIR/cinematic-mp4-help.txt"
+grep -q -- '--basemap-source-url' "$TMP_DIR/cinematic-mp4-help.txt"
 "$PYTHON" scripts/build_cited_draft.py --help > "$TMP_DIR/draft-help.txt"
 grep -q -- '--claims-file' "$TMP_DIR/draft-help.txt"
 "$PYTHON" scripts/build_release_metadata.py --help > "$TMP_DIR/metadata-help.txt"
@@ -256,8 +260,18 @@ printf 'PASS: fact-check report includes source traceability, warnings, and huma
 
 printf '\n[22/22] Cinematic map MP4 frame-render smoke test\n'
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
-  "$PYTHON" scripts/render_cinematic_mp4.py --scene data/projects/sample_cinematic_scene.json --output "$TMP_DIR/cinematic-scene.mp4" --fps 1 > "$TMP_DIR/cinematic-mp4-result.json"
+  "$PYTHON" scripts/render_cinematic_mp4.py \
+    --scene data/projects/sample_cinematic_scene.json \
+    --output "$TMP_DIR/cinematic-scene.mp4" --fps 1 \
+    --geojson data/assets/natural_earth_110m_admin_0_countries.geojson \
+    --basemap-attribution "Made with Natural Earth; GeoJSON conversion by Martyn Afford" \
+    --basemap-license "Natural Earth public domain; conversion CC0-1.0 (publisher terms require human review)" \
+    --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json" \
+    > "$TMP_DIR/cinematic-mp4-result.json"
   grep -q '"render": "PASS"' "$TMP_DIR/cinematic-mp4-result.json"
+  grep -q '"map_mode": "geojson_overlay"' "$TMP_DIR/cinematic-mp4-result.json"
+  grep -q 'Natural Earth' "$TMP_DIR/cinematic-mp4-result.json"
+  grep -q '"independently_verified": false' "$TMP_DIR/cinematic-mp4-result.json"
   ffprobe -v error -show_entries stream=codec_type,width,height -of json "$TMP_DIR/cinematic-scene.mp4" > "$TMP_DIR/cinematic-mp4-probe.json"
   grep -q '"codec_type": "video"' "$TMP_DIR/cinematic-mp4-probe.json"
   grep -q '"width": 1280' "$TMP_DIR/cinematic-mp4-probe.json"
@@ -277,10 +291,10 @@ SRT
   grep -q 'audio' "$TMP_DIR/cinematic-final-streams.txt"
   grep -q 'subtitle' "$TMP_DIR/cinematic-final-streams.txt"
   mkdir -p "$ROOT_DIR/ci-artifacts"
-  cp "$TMP_DIR/cinematic-scene.mp4" "$ROOT_DIR/ci-artifacts/cinematic-scene-visuals-only.mp4"
-  cp "$TMP_DIR/cinematic-final.mp4" "$ROOT_DIR/ci-artifacts/cinematic-scene-synthetic-audio-srt-smoke.mp4"
-  ffmpeg -hide_banner -loglevel error -ss 10 -i "$TMP_DIR/cinematic-scene.mp4" -frames:v 1 -y "$ROOT_DIR/ci-artifacts/cinematic-scene-poster.png"
-  printf 'PASS: cinematic MP4 rendered, muxed with synthetic audio/SRT, all three streams validated, and review artifacts saved\n'
+  cp "$TMP_DIR/cinematic-scene.mp4" "$ROOT_DIR/ci-artifacts/natural-earth-cinematic-visuals-only.mp4"
+  cp "$TMP_DIR/cinematic-final.mp4" "$ROOT_DIR/ci-artifacts/natural-earth-cinematic-synthetic-audio-srt-smoke.mp4"
+  ffmpeg -hide_banner -loglevel error -ss 10 -i "$TMP_DIR/cinematic-scene.mp4" -frames:v 1 -y "$ROOT_DIR/ci-artifacts/natural-earth-cinematic-poster.png"
+  printf 'PASS: Natural Earth overlay rendered into cinematic MP4 frames, muxed with synthetic audio/SRT, all three streams validated, and review artifacts saved\n'
 else
   printf 'SKIP: cinematic MP4 smoke render (FFmpeg/FFprobe not installed)\n'
 fi

@@ -23,7 +23,8 @@ Build a source-grounded workflow for researching public geopolitical events and 
 - Generate optional offline eSpeak narration WAVs when the requested language voice is installed; missing voices fail explicitly rather than silently switching languages.
 - Produce release blockers for unresolved unverified claims, uncleared media rights, and missing human approvals.
 - Build a deterministic release evidence bundle with SHA-256 input hashes, claim/source traceability, media-rights metadata, render/subtitle checks, approval records, and fail-closed release blockers.
-- Generate a first-stage animated SVG route scene from a validated JSON plan; this is a schematic preview, not yet a licensed geographic basemap or finished MP4 animation.
+- Generate deterministic, bounded 1280×720 MP4 previews from validated scene plans, with frame-by-frame route motion and optional local GeoJSON Polygon/MultiPolygon overlays.
+- Render a bundled, generalized Natural Earth 1:110m country-boundary layer into SVG and MP4 previews with visible supplied attribution/license/source metadata; this software does not independently verify legal rights or geographic suitability.
 - Run repeatable local validation without consuming GitHub Actions minutes.
 
 ## Editorial and safety rules
@@ -36,7 +37,7 @@ Build a source-grounded workflow for researching public geopolitical events and 
 ## Project layout
 - `app/research/` — source and claim ledgers
 - `app/editorial/` — documentary package validation and release checks
-- `app/video/` — FFmpeg muxing adapter and first-stage schematic SVG route animation
+- `app/video/` — deterministic SVG/MP4 map rendering, optional local GeoJSON overlays, and FFmpeg narration/subtitle muxing
 - `app/voice/` — SRT validation and optional offline eSpeak narration
 - `app/publishing/` — YouTube metadata drafts and release evidence bundles; publishing/upload remains unimplemented
 - `config/` — non-secret configuration
@@ -86,7 +87,8 @@ The bundled boundaries are generalized for world/overview maps, not local precis
 - [Translation traceability validation](docs/translation-validation.md)
 - [Read-only local dashboard](docs/dashboard.md)
 - [YouTube release metadata draft](docs/release-metadata.md)
-- [Cinematic map generator (initial SVG stage)](docs/cinematic-map-generator.md)
+- [Cinematic map generator and GeoJSON-aware MP4 preview](docs/cinematic-map-generator.md)
+- [Natural Earth cinematic MP4 preview guide](docs/natural-earth-cinematic-mp4.md)
 - [Local FFmpeg video assembly](docs/video-assembly.md)
 - [Rendered-video technical validation](docs/render-validation.md)
 - [Release evidence bundle](docs/release-evidence-bundle.md)
@@ -108,7 +110,6 @@ Project owner and maintainer: **Muhammad Naeem Khan** (`hijaz7861`).
 A generalized Natural Earth world-country GeoJSON dataset is bundled locally at `data/assets/natural_earth_110m_admin_0_countries.geojson`. See [dataset provenance and terms](data/assets/NATURAL_EARTH_110M_NOTICE.md) and the [cinematic map run guide](docs/cinematic-map-generator.md).
 
 ```sh
-python3 -m pip install -r requirements.txt
 python3 -m pip install -r requirements-media.txt
 python3 scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_scene.json --output artifacts/natural-earth-world-preview.svg --overwrite --geojson data/assets/natural_earth_110m_admin_0_countries.geojson --basemap-attribution "Natural Earth (public-domain dataset; 1:110m Admin 0 Countries)" --basemap-license "Public domain (Natural Earth; verify current terms)" --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
 ```
