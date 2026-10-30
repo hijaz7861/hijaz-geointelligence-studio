@@ -141,7 +141,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
       "render_validation":render_report,"subtitle_validation":subtitle_report,
       "human_approval_record":human_approval,
       "counts":{"source_records":len(sources),"claim_records":len(claims),"linked_claims":len(claim_evidence),"media_assets":len(media_evidence)},
-      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","Human approval is recorded from project metadata and is not authenticated by this tool.","This bundle does not publish, upload, or authorize public release."]
+      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","HMAC receipts protect record integrity and show shared-key possession; reviewer identity remains self-asserted and is not independently authenticated.","This bundle does not publish, upload, or authorize public release."]
     }
 def write_release_bundle(bundle: dict[str, Any], output_path: str | Path, *, overwrite: bool = False) -> Path:
     output=Path(output_path).expanduser().resolve()
