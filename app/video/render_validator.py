@@ -36,4 +36,12 @@ def inspect_rendered_video(path: str | Path, *, require_audio: bool = True, requ
     try: duration=float(duration_value)
     except (TypeError,ValueError): duration=0.0
     if not math.isfinite(duration) or duration <= 0: raise RenderValidationError("Rendered file has no valid positive duration.")
-    return {'validation':'PASS','file':str(video),'duration_seconds':round(duration,3),'width':width,'height':height,'video_codec':primary.get('codec_name'),'audio_stream_count':len(audios),'subtitle_stream_count':len(subtitles),'note':'Technical stream validation only; editorial, factual, licensing, and audio-quality review remain required.'}
+    audio_duration = None
+    if audios:
+        try:
+            candidate = float(audios[0].get("duration"))
+            if math.isfinite(candidate) and candidate > 0:
+                audio_duration = round(candidate, 3)
+        except (TypeError, ValueError):
+            audio_duration = None
+    return {'validation':'PASS','file':str(video),'duration_seconds':round(duration,3),'audio_duration_seconds':audio_duration,'width':width,'height':height,'video_codec':primary.get('codec_name'),'audio_stream_count':len(audios),'subtitle_stream_count':len(subtitles),'note':'Technical stream validation only; audio-duration bounds do not prove speech/caption synchronization; editorial, factual, licensing, and audio-quality review remain required.'}
