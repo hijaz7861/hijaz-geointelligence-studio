@@ -39,7 +39,7 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertTrue(any('Subtitle timeline exceeds rendered video duration by 1000 ms.' in item for item in bundle['release_blockers']))
  @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':2.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':0.5})
  def test_subtitle_timeline_beyond_audio_duration_is_blocked(self,probe):
-  self.srt.write_text('1\\n00:00:00,000 --> 00:00:01,000\\nCaption extends beyond audio.\\n',encoding='utf-8')
+  self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nCaption extends beyond audio.\n',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertFalse(bundle['subtitle_validation']['timeline_within_audio'])
   self.assertTrue(any('Subtitle timeline exceeds audio stream duration by 500 ms.' in item for item in bundle['release_blockers']))
