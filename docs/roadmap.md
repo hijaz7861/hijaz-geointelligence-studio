@@ -39,14 +39,15 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
 - [x] Validate rendered output for video/audio/subtitle streams, positive duration, and minimum configured resolution using ffprobe.
-- [ ] Verify subtitle-to-audio synchronization, audio quality/levels, and render errors.
+- [ ] Verify subtitle-to-speech synchronization, audio quality/levels, and render errors; the current automated check only compares cue end time with audio-stream duration and does not prove alignment.
 - [ ] Add original graphics/timeline generation and a complete sample documentary render from a cited script.
 
 ## Phase 4 — Release safety and YouTube preparation
 - [x] Add human-approval flags for script, translation, media rights, and final video review.
 - [x] Generate a source-attributed YouTube title/description metadata draft with explicit release blockers and no upload action.
 - [x] Add a deterministic release evidence bundle with input SHA-256 hashes, claim/source mapping, rights metadata, render/subtitle checks, human-approval record, and explicit blockers; repository validation and evidence-bundle smoke test passed in GitHub Actions on 2026-10-28.
-- [ ] Extend release evidence bundle with verified license URLs/expiry dates, thumbnail evidence, audio-sync metrics, and a signed approval record.
+- [x] Add project-bound HMAC-SHA256 receipts for script, translation, media-rights, and exact final-MP4 review; verification detects receipt/project/render changes and keeps publishing blocked. Reviewer identity remains self-asserted because the key is shared.
+- [ ] Extend release evidence bundle with independently reviewed license URLs/expiry dates, thumbnail evidence, true subtitle-to-speech alignment metrics, and stronger reviewer identity assurance.
 - [ ] Prepare metadata and upload package; do not publish automatically by default.
 - [ ] If YouTube API upload is later added, use least-privilege OAuth, secret-free logs, private/draft default, and a clear approval gate.
 
