@@ -46,6 +46,16 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
             refs.append({"url":url,"in_source_ledger":source is not None,"title":source.get("title") if source else None,"source_type":source.get("source_type") if source else None,"published_at":source.get("published_at") if source else None})
             if source is None: blockers.append(f"Claim source is missing from source ledger: {url}")
         claim_evidence.append({"claim":text,"status":claim.get("status"),"sources":refs,"notes":"Source linkage is metadata evidence, not independent factual verification."})
+    citation_refs=[source for claim in claim_evidence for source in claim["sources"]]
+    citation_validation={
+        "validation":"LEDGER_LINKAGE_ONLY",
+        "project_claim_count":len(project.get("claim_ids",[])),
+        "linked_claim_count":len(claim_evidence),
+        "source_reference_count":len(citation_refs),
+        "source_references_in_ledger":sum(1 for item in citation_refs if item["in_source_ledger"]),
+        "unresolved_source_references":sum(1 for item in citation_refs if not item["in_source_ledger"]),
+        "note":"This checks reference-to-ledger linkage and metadata only; it does not fetch source content, assess source quality, or prove claim support or truth.",
+    }
     media_evidence=[]
     for asset in project.get("media_assets",[]):
         rights=asset.get("rights_status")
@@ -137,7 +147,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
       "created_utc_note":"Timestamp intentionally omitted to keep the evidence report reproducible for identical inputs.",
       "structural_validation":"PASS","publish_ready":False,"release_status":"draft_blocked",
       "release_blockers":list(dict.fromkeys(blockers)),"input_files":inputs,
-      "claim_evidence":claim_evidence,"media_rights_evidence":media_evidence,
+      "claim_evidence":claim_evidence,"citation_validation":citation_validation,"media_rights_evidence":media_evidence,
       "render_validation":render_report,"subtitle_validation":subtitle_report,
       "human_approval_record":human_approval,
       "counts":{"source_records":len(sources),"claim_records":len(claims),"linked_claims":len(claim_evidence),"media_assets":len(media_evidence)},
