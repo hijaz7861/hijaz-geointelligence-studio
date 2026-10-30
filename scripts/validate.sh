@@ -327,6 +327,6 @@ done
   --reason 'Synthetic validation receipt only.' \
   --artifact "$TMP_DIR/approval/review.mp4" > /dev/null
 grep -q 'final_video_reviewed' "$TMP_DIR/approval/receipts.json"
-printf 'PASS: owner-only key generated and four project-bound synthetic receipts recorded\\n'
+printf 'PASS: owner-only key generated and four project-bound synthetic receipts recorded\n'
 
 printf '\nALL LOCAL VALIDATION CHECKS PASSED\n'
