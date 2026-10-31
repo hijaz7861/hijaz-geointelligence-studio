@@ -111,12 +111,28 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
                         blockers.append("Audio stream duration is unavailable; subtitle-to-audio timeline cannot be checked.")
                     else:
                         audio_duration_ms = round(float(audio_duration_seconds) * 1000)
-                        timeline_within_audio = subtitle_duration_ms <= audio_duration_ms + 250
                         subtitle_report["audio_duration_ms"] = audio_duration_ms
-                        subtitle_report["timeline_within_audio"] = timeline_within_audio
-                        if not timeline_within_audio:
-                            overrun_ms = subtitle_duration_ms - audio_duration_ms
-                            blockers.append(f"Subtitle timeline exceeds audio stream duration by {overrun_ms} ms.")
+                        audio_start_seconds = render_report.get("audio_start_time_seconds") if isinstance(render_report, dict) else None
+                        if isinstance(audio_start_seconds, bool) or not isinstance(audio_start_seconds, (int, float)) or not math.isfinite(float(audio_start_seconds)):
+                            blockers.append("Audio stream start time is unavailable; subtitle-to-audio timeline cannot be checked.")
+                        else:
+                            audio_start_ms = round(float(audio_start_seconds) * 1000)
+                            audio_end_ms = audio_start_ms + audio_duration_ms
+                            first_subtitle_start_ms = min(c.start_ms for c in cues)
+                            timeline_within_audio_start = first_subtitle_start_ms >= audio_start_ms - 250
+                            timeline_within_audio_end = subtitle_duration_ms <= audio_end_ms + 250
+                            timeline_within_audio = timeline_within_audio_start and timeline_within_audio_end
+                            subtitle_report["audio_start_ms"] = audio_start_ms
+                            subtitle_report["audio_end_ms"] = audio_end_ms
+                            subtitle_report["timeline_within_audio_start"] = timeline_within_audio_start
+                            subtitle_report["timeline_within_audio_end"] = timeline_within_audio_end
+                            subtitle_report["timeline_within_audio"] = timeline_within_audio
+                            if not timeline_within_audio_start:
+                                gap_ms = audio_start_ms - first_subtitle_start_ms
+                                blockers.append(f"Subtitle timeline starts {gap_ms} ms before audio stream start.")
+                            if not timeline_within_audio_end:
+                                overrun_ms = subtitle_duration_ms - audio_end_ms
+                                blockers.append(f"Subtitle timeline exceeds audio stream end by {overrun_ms} ms.")
         except (SubtitleValidationError,OSError) as exc: blockers.append(f"Subtitle validation failed: {exc}")
     if metadata_path is None or not Path(metadata_path).expanduser().is_file():
         blockers.append("YouTube metadata draft is missing.")

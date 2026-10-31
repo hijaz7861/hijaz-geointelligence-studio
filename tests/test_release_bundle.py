@@ -21,7 +21,7 @@ class ReleaseBundleTests(unittest.TestCase):
   self.srt=self.root/'final.srt'; self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nSynthetic caption.\n',encoding='utf-8')
   self.metadata=self.root/'metadata.json'; self.metadata.write_text(json.dumps({'publish_ready':False,'release_blockers':['Human approval missing']}),encoding='utf-8')
  def tearDown(self): self.temp.cleanup()
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0,'audio_start_time_seconds':0.0})
  def test_bundle_hashes_inputs_and_never_marks_publish_ready(self,probe):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertEqual(bundle['structural_validation'],'PASS'); self.assertFalse(bundle['publish_ready']); self.assertEqual(bundle['render_validation']['validation'],'PASS')
@@ -34,25 +34,38 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertEqual(bundle['citation_validation']['validation'],'LEDGER_LINKAGE_ONLY')
   self.assertEqual(bundle['citation_validation']['source_references_in_ledger'],1)
   self.assertEqual(bundle['citation_validation']['unresolved_source_references'],0)
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0,'audio_start_time_seconds':0.0})
  def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):
   self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past render.\n',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertFalse(bundle['subtitle_validation']['timeline_within_render'])
   self.assertTrue(any('Subtitle timeline exceeds rendered video duration by 1000 ms.' in item for item in bundle['release_blockers']))
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':2.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':0.5})
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':2.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':0.5,'audio_start_time_seconds':0.0})
  def test_subtitle_timeline_beyond_audio_duration_is_blocked(self,probe):
   self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nCaption extends beyond audio.\n',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertFalse(bundle['subtitle_validation']['timeline_within_audio'])
-  self.assertTrue(any('Subtitle timeline exceeds audio stream duration by 500 ms.' in item for item in bundle['release_blockers']))
+  self.assertTrue(any('Subtitle timeline exceeds audio stream end by 500 ms.' in item for item in bundle['release_blockers']))
+
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':2.5,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0,'audio_start_time_seconds':1.0})
+ def test_subtitle_start_before_audio_stream_start_is_blocked(self,probe):
+  self.srt.write_text('1\n00:00:00,000 --> 00:00:00,500\nCaption begins before audio.\n',encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
+  self.assertFalse(bundle['subtitle_validation']['timeline_within_audio_start'])
+  self.assertFalse(bundle['subtitle_validation']['timeline_within_audio'])
+  self.assertTrue(any('Subtitle timeline starts 1000 ms before audio stream start.' in item for item in bundle['release_blockers']))
+
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':2.5,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
+ def test_missing_audio_start_time_is_a_release_blocker(self,probe):
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
+  self.assertTrue(any('Audio stream start time is unavailable' in item for item in bundle['release_blockers']))
 
  def test_approval_receipts_are_required_and_reported(self):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertEqual(bundle['human_approval_record']['receipt_validation']['validation'],'NOT_VERIFIED')
   self.assertTrue(any('Tamper-evident human approval receipts' in item for item in bundle['release_blockers']))
 
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0})
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0,'audio_start_time_seconds':0.0})
  def test_valid_approval_receipts_are_included_but_never_authorize_publish(self,probe):
   project={**PROJECT,'approval':{'script_reviewed':True,'translation_reviewed':True,'media_rights_reviewed':True,'final_video_reviewed':True,'approved_by':'Human reviewer'}}
   self.project.write_text(json.dumps(project),encoding='utf-8')
