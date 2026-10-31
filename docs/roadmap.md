@@ -39,7 +39,7 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
 - [x] Validate rendered output for video/audio/subtitle streams, positive duration, and minimum configured resolution using ffprobe.
-- [ ] Verify subtitle-to-speech synchronization, audio quality/levels, and render errors; the current automated check only compares cue end time with audio-stream duration and does not prove alignment.
+- [ ] Verify subtitle-to-speech synchronization, audio quality/levels, and render errors; automated checks now bound the first/last subtitle cues against audio-stream start/end timestamps and container duration, but do not prove word-level alignment.
 - [ ] Add original graphics/timeline generation and a complete sample documentary render from a cited script.
 
 ## Phase 4 — Release safety and YouTube preparation
