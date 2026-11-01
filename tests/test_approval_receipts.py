@@ -119,6 +119,18 @@ class ApprovalReceiptTests(unittest.TestCase):
                 reason="Reviewed the final MP4.",
             )
 
+    def test_record_approval_rejects_symlink_key_path(self):
+        if os.name != "posix":
+            self.skipTest("POSIX symlink semantics are unavailable")
+        linked_key = self.root / "approval-link.key"
+        linked_key.symlink_to(self.key)
+        with self.assertRaisesRegex(ApprovalReceiptError, "not a symlink"):
+            record_approval(
+                self.project, self.receipts, linked_key, stage="script_reviewed",
+                decision="approved", reviewer="Human reviewer",
+                reason="Reviewed the script text.",
+            )
+
     def test_insecure_key_permissions_are_rejected(self):
         if os.name != "posix":
             self.skipTest("POSIX permission semantics are unavailable")

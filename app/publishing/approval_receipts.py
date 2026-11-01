@@ -134,13 +134,14 @@ def record_approval(
         raise ApprovalReceiptError("Only final_video_reviewed accepts an --artifact path.")
     project = Path(project_path).expanduser().resolve()
     receipts = Path(receipts_path).expanduser().resolve()
-    key_file = Path(key_path).expanduser().resolve()
+    key_input = Path(key_path).expanduser()
+    key_file = key_input.resolve()
     artifact = Path(artifact_path).expanduser().resolve() if artifact_path is not None else None
     if not project.is_file():
         raise ApprovalReceiptError("Project file does not exist.")
     if receipts in {project, key_file, artifact}:
         raise ApprovalReceiptError("Receipts output must differ from project, key, and artifact inputs.")
-    key = _read_key(key_file)
+    key = _read_key(key_input)
     payload = {
         "schema_version": "1.0",
         "project_id": _project_id(project),
