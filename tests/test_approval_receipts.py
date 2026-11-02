@@ -131,6 +131,25 @@ class ApprovalReceiptTests(unittest.TestCase):
                 reason="Reviewed the script text.",
             )
 
+    def test_key_reader_rejects_non_regular_file(self):
+        with self.assertRaisesRegex(ApprovalReceiptError, "regular file"):
+            record_approval(
+                self.project, self.receipts, self.root, stage="script_reviewed",
+                decision="approved", reviewer="Human reviewer",
+                reason="Reviewed the script text.",
+            )
+
+    def test_create_key_rejects_dangling_symlink_without_creating_target(self):
+        if os.name != "posix":
+            self.skipTest("POSIX symlink semantics are unavailable")
+        target = self.root / "must-not-be-created.key"
+        linked_key = self.root / "dangling-approval-link.key"
+        linked_key.symlink_to(target)
+        with self.assertRaisesRegex(ApprovalReceiptError, "Refusing to overwrite"):
+            create_approval_key(linked_key)
+        self.assertTrue(linked_key.is_symlink())
+        self.assertFalse(target.exists())
+
     def test_insecure_key_permissions_are_rejected(self):
         if os.name != "posix":
             self.skipTest("POSIX permission semantics are unavailable")

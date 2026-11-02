@@ -6,6 +6,7 @@ independently authenticate a reviewer's legal identity or establish factual trut
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import errno
 import hashlib
 import hmac
 import json
@@ -37,14 +38,46 @@ def sha256_file(path: str | Path) -> str:
 
 
 def _read_key(path: str | Path) -> bytes:
+    """Read key material from one checked file descriptor without following symlinks."""
     key_path = Path(path).expanduser()
-    if key_path.is_symlink() or not key_path.is_file():
+    if key_path.is_symlink():
         raise ApprovalReceiptError("Approval key must be an existing regular file, not a symlink.")
+
+    flags = os.O_RDONLY
     if os.name == "posix":
-        mode = stat.S_IMODE(key_path.stat().st_mode)
-        if mode & 0o077:
-            raise ApprovalReceiptError("Approval key permissions are too broad; restrict the key file to owner-only access (0600).")
-    key = key_path.read_bytes()
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        if nofollow is None:
+            raise ApprovalReceiptError("This POSIX platform lacks O_NOFOLLOW; approval keys cannot be opened safely.")
+        flags |= nofollow
+        flags |= getattr(os, "O_CLOEXEC", 0)
+        # Avoid blocking if an unexpected FIFO is supplied; fstat rejects it below.
+        flags |= getattr(os, "O_NONBLOCK", 0)
+
+    fd: int | None = None
+    try:
+        fd = os.open(key_path, flags)
+        file_info = os.fstat(fd)
+        if not stat.S_ISREG(file_info.st_mode):
+            raise ApprovalReceiptError("Approval key must be an existing regular file, not a symlink.")
+        if os.name == "posix":
+            mode = stat.S_IMODE(file_info.st_mode)
+            if mode & 0o077:
+                raise ApprovalReceiptError("Approval key permissions are too broad; restrict the key file to owner-only access (0600).")
+        with os.fdopen(fd, "rb") as stream:
+            fd = None
+            key = stream.read()
+    except ApprovalReceiptError:
+        raise
+    except OSError as exc:
+        # O_NOFOLLOW reports ELOOP if a symlink is introduced after the
+        # preliminary path check; keep that race fail-closed and explicit.
+        if getattr(exc, "errno", None) == errno.ELOOP:
+            raise ApprovalReceiptError("Approval key must be an existing regular file, not a symlink.") from exc
+        raise ApprovalReceiptError(f"Cannot safely open approval key: {exc}") from exc
+    finally:
+        if fd is not None:
+            os.close(fd)
+
     if len(key) < 32:
         raise ApprovalReceiptError("Approval key must contain at least 32 random bytes.")
     return key
@@ -228,21 +261,38 @@ def verify_approval_receipts(
 
 
 def create_approval_key(path: str | Path) -> Path:
-    """Create a new 256-bit key using owner-only permissions; never overwrite."""
-    output = Path(path).expanduser().resolve()
+    """Create a new 256-bit key without following or replacing a destination symlink."""
+    requested = Path(path).expanduser()
+    if not requested.name:
+        raise ApprovalReceiptError("Approval key path must name a file.")
+    # Resolve the parent, not the final component: resolving the full path
+    # would erase a dangling destination symlink before it can be rejected.
+    output = requested.parent.resolve() / requested.name
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists() or output.is_symlink():
         raise ApprovalReceiptError(f"Refusing to overwrite existing key file: {output}")
-    fd = None
+
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if os.name == "posix":
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        if nofollow is None:
+            raise ApprovalReceiptError("This POSIX platform lacks O_NOFOLLOW; approval keys cannot be created safely.")
+        flags |= nofollow
+        flags |= getattr(os, "O_CLOEXEC", 0)
+
+    fd: int | None = None
     try:
-        fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        os.write(fd, secrets.token_bytes(32))
-        os.fsync(fd)
+        fd = os.open(output, flags, 0o600)
+        if os.name == "posix":
+            os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "wb") as stream:
+            fd = None
+            stream.write(secrets.token_bytes(32))
+            stream.flush()
+            os.fsync(stream.fileno())
     except OSError as exc:
         raise ApprovalReceiptError(f"Cannot create approval key: {exc}") from exc
     finally:
         if fd is not None:
             os.close(fd)
-    if os.name == "posix":
-        output.chmod(0o600)
     return output
