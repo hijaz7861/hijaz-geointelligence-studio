@@ -18,6 +18,20 @@ class SourceLedgerTests(unittest.TestCase):
         with self.assertRaises(SourceLedgerError):
             validate_source({**VALID, "url": "file:///etc/passwd"})
 
+    def test_rejects_malformed_authority_and_embedded_credentials(self):
+        invalid_urls = (
+            "https://user:password@example.org/report",
+            "https://example.org:not-a-port/report",
+            "https://example.org:0/report",
+            "https://example.org:/report",
+            "https://[broken/report",
+            "https://example.org\\\\path",
+        )
+        for url in invalid_urls:
+            with self.subTest(url=url):
+                with self.assertRaises(SourceLedgerError):
+                    validate_source({**VALID, "url": url})
+
     def test_rejects_invalid_date(self):
         with self.assertRaises(SourceLedgerError):
             validate_source({**VALID, "published_at": "yesterday"})
