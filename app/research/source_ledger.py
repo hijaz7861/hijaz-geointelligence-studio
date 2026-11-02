@@ -28,6 +28,30 @@ def _canonical_url(url: str) -> str:
     return urlunparse((parsed.scheme.lower(), parsed.netloc.lower(), parsed.path.rstrip("/"), parsed.params, parsed.query, ""))
 
 
+def validate_http_url(url: str) -> str:
+    """Validate an absolute HTTP(S) citation URL without fetching it."""
+    if not isinstance(url, str) or not url.strip():
+        raise SourceLedgerError("URL must be an absolute HTTP or HTTPS URL.")
+    candidate = url.strip()
+    if any(ch.isspace() or ord(ch) < 0x20 for ch in candidate) or "\\" in candidate:
+        raise SourceLedgerError("URL must not contain whitespace, control characters, or backslashes.")
+    try:
+        parsed = urlparse(candidate)
+        hostname = parsed.hostname
+        port = parsed.port
+    except ValueError as exc:
+        raise SourceLedgerError("URL must be a syntactically valid absolute HTTP or HTTPS URL.") from exc
+    if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc or not hostname:
+        raise SourceLedgerError("URL must be an absolute HTTP or HTTPS URL with a hostname.")
+    if parsed.username is not None or parsed.password is not None:
+        raise SourceLedgerError("Citation URLs must not contain embedded username or password credentials.")
+    if parsed.netloc.endswith(":"):
+        raise SourceLedgerError("Citation URL must not contain an empty port.")
+    if port is not None and not 1 <= port <= 65535:
+        raise SourceLedgerError("Citation URL port must be between 1 and 65535.")
+    return candidate
+
+
 def validate_source(source: dict[str, Any]) -> dict[str, str]:
     if not isinstance(source, dict):
         raise SourceLedgerError("Source must be a JSON object.")
@@ -40,9 +64,7 @@ def validate_source(source: dict[str, Any]) -> dict[str, str]:
         if not isinstance(value, str) or not value.strip():
             raise SourceLedgerError(f"Field '{field}' must be a non-empty string.")
         normalized[field] = value.strip()
-    parsed = urlparse(normalized["url"])
-    if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc or any(ch.isspace() for ch in normalized["url"]):
-        raise SourceLedgerError("URL must be an absolute HTTP or HTTPS URL without whitespace.")
+    normalized["url"] = validate_http_url(normalized["url"])
     if not _DATE_RE.fullmatch(normalized["published_at"]):
         raise SourceLedgerError("published_at must be an ISO date (YYYY-MM-DD).")
     try:
