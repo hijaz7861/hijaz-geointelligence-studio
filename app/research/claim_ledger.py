@@ -5,11 +5,10 @@ This validates traceability metadata only. It cannot prove a claim is true.
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import Any
 
-from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
+from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources, validate_http_url
 
 DEFAULT_CLAIMS = Path(__file__).resolve().parents[2] / "data" / "sources" / "claims.json"
 CLAIM_STATUSES = {"verified_fact", "official_claim", "independent_reporting", "analysis", "unverified"}
@@ -39,9 +38,12 @@ def validate_claim(claim: dict[str, Any], known_urls: set[str] | None = None) ->
         raise ClaimLedgerError("source_urls must be a non-empty JSON array.")
     clean_urls: list[str] = []
     for url in urls:
-        if not isinstance(url, str) or not url.strip() or not re.match(r"^https?://", url.strip(), re.I):
+        if not isinstance(url, str) or not url.strip():
             raise ClaimLedgerError("Each source URL must be an absolute HTTP or HTTPS URL.")
-        normalized_url = url.strip()
+        try:
+            normalized_url = validate_http_url(url)
+        except SourceLedgerError as exc:
+            raise ClaimLedgerError(f"Each source URL must be a valid absolute HTTP or HTTPS URL: {exc}") from exc
         if normalized_url in clean_urls:
             raise ClaimLedgerError("Duplicate source URL in claim.")
         if known_urls is not None and normalized_url not in known_urls:
