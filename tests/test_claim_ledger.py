@@ -14,6 +14,9 @@ class ClaimLedgerTests(unittest.TestCase):
   add_claim(CLAIM,self.claims,self.sources); self.assertEqual(load_claims(self.claims,self.sources),[CLAIM])
  def test_rejects_missing_source_url(self):
   with self.assertRaisesRegex(ClaimLedgerError,"non-empty JSON array"): validate_claim({**CLAIM,"source_urls":[]})
+ def test_rejects_malformed_url_even_without_source_lookup(self):
+  with self.assertRaisesRegex(ClaimLedgerError,"valid absolute HTTP or HTTPS URL"):
+   validate_claim({**CLAIM,"source_urls":["https://example.org:not-a-port/report"]})
  def test_rejects_unknown_source_url(self):
   with self.assertRaisesRegex(ClaimLedgerError,"absent from the source ledger"): add_claim({**CLAIM,"source_urls":["https://example.net/not-recorded"]},self.claims,self.sources)
  def test_rejects_invalid_status(self):
