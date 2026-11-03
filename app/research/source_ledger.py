@@ -11,7 +11,7 @@ import re
 from datetime import date
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse, urlsplit, urlunparse, urlunsplit
+from urllib.parse import urlsplit, urlunsplit
 
 DEFAULT_LEDGER = Path(__file__).resolve().parents[2] / "data" / "sources" / "sources.json"
 SOURCE_TYPES = {"official_statement", "primary_document", "independent_reporting", "analysis"}
