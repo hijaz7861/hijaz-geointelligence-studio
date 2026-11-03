@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.research.source_ledger import SourceLedgerError, add_source, load_sources, validate_source
+from app.research.source_ledger import SourceLedgerError, add_source, canonicalize_http_url, load_sources, validate_source
 
 VALID = {"title": "Example public report", "url": "https://example.org/report", "published_at": "2026-10-20",
          "source_type": "independent_reporting", "claim_status": "independent_reporting",
@@ -28,6 +28,26 @@ class SourceLedgerTests(unittest.TestCase):
             "https://example.org\\\\path",
         )
         for url in invalid_urls:
+            with self.subTest(url=url):
+                with self.assertRaises(SourceLedgerError):
+                    validate_source({**VALID, "url": url})
+
+    def test_canonicalizes_idn_default_port_fragment_and_ipv6(self):
+        self.assertEqual(
+            canonicalize_http_url("HTTPS://BÜCHER.example:443/report/#section"),
+            "https://xn--bcher-kva.example/report",
+        )
+        self.assertEqual(
+            canonicalize_http_url("https://[2001:0db8:0:0::1]:443/report/"),
+            "https://[2001:db8::1]/report",
+        )
+
+    def test_rejects_malformed_dns_hostname(self):
+        for url in (
+            "https://-bad.example/report",
+            "https://bad_.example/report",
+            "https://example..org/report",
+        ):
             with self.subTest(url=url):
                 with self.assertRaises(SourceLedgerError):
                     validate_source({**VALID, "url": url})
@@ -64,7 +84,7 @@ class SourceLedgerTests(unittest.TestCase):
             path = Path(tmp) / "sources.json"
             add_source(VALID, path)
             with self.assertRaisesRegex(SourceLedgerError, "already exists"):
-                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG/report/"}, path)
+                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG:443/report/#section"}, path)
 
     def test_missing_fields_are_rejected(self):
         with self.assertRaisesRegex(SourceLedgerError, "Missing required fields"):

@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources, validate_http_url
+from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, canonicalize_http_url, load_sources, validate_http_url
 
 DEFAULT_CLAIMS = Path(__file__).resolve().parents[2] / "data" / "sources" / "claims.json"
 CLAIM_STATUSES = {"verified_fact", "official_claim", "independent_reporting", "analysis", "unverified"}
@@ -37,6 +37,15 @@ def validate_claim(claim: dict[str, Any], known_urls: set[str] | None = None) ->
     if not isinstance(urls, list) or not urls:
         raise ClaimLedgerError("source_urls must be a non-empty JSON array.")
     clean_urls: list[str] = []
+    canonical_urls: set[str] = set()
+    try:
+        known_canonical_urls = (
+            {canonicalize_http_url(item) for item in known_urls}
+            if known_urls is not None
+            else None
+        )
+    except SourceLedgerError as exc:
+        raise ClaimLedgerError(f"Known source URL is invalid: {exc}") from exc
     for url in urls:
         if not isinstance(url, str) or not url.strip():
             raise ClaimLedgerError("Each source URL must be an absolute HTTP or HTTPS URL.")
@@ -44,10 +53,12 @@ def validate_claim(claim: dict[str, Any], known_urls: set[str] | None = None) ->
             normalized_url = validate_http_url(url)
         except SourceLedgerError as exc:
             raise ClaimLedgerError(f"Each source URL must be a valid absolute HTTP or HTTPS URL: {exc}") from exc
-        if normalized_url in clean_urls:
+        canonical_url = canonicalize_http_url(normalized_url)
+        if canonical_url in canonical_urls:
             raise ClaimLedgerError("Duplicate source URL in claim.")
-        if known_urls is not None and normalized_url not in known_urls:
+        if known_canonical_urls is not None and canonical_url not in known_canonical_urls:
             raise ClaimLedgerError(f"Claim references a URL absent from the source ledger: {normalized_url}")
+        canonical_urls.add(canonical_url)
         clean_urls.append(normalized_url)
     return {**text_fields, "source_urls": clean_urls}
 
