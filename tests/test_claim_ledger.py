@@ -18,11 +18,14 @@ class ClaimLedgerTests(unittest.TestCase):
   with self.assertRaisesRegex(ClaimLedgerError,"valid absolute HTTP or HTTPS URL"):
    validate_claim({**CLAIM,"source_urls":["https://example.org:not-a-port/report"]})
  def test_claim_matches_source_after_url_canonicalization(self):
-  equivalent= {**CLAIM,"source_urls":["HTTPS://EXAMPLE.ORG:443/report/#section"]}
+  equivalent= {**CLAIM,"source_urls":["HTTPS://EXAMPLE.ORG:443/report#section"]}
   self.assertEqual(validate_claim(equivalent,{SOURCE["url"]})["source_urls"],equivalent["source_urls"])
  def test_rejects_equivalent_duplicate_urls_in_claim(self):
-  equivalent= {**CLAIM,"source_urls":[SOURCE["url"],"HTTPS://EXAMPLE.ORG:443/report/#section"]}
+  equivalent= {**CLAIM,"source_urls":[SOURCE["url"],"HTTPS://EXAMPLE.ORG:443/report#section"]}
   with self.assertRaisesRegex(ClaimLedgerError,"Duplicate source URL"): validate_claim(equivalent)
+ def test_rejects_claim_reference_with_distinct_trailing_slash(self):
+  with self.assertRaisesRegex(ClaimLedgerError,"absent from the source ledger"):
+   validate_claim({**CLAIM,"source_urls":["https://example.org/report/"]},{SOURCE["url"]})
  def test_rejects_unknown_source_url(self):
   with self.assertRaisesRegex(ClaimLedgerError,"absent from the source ledger"): add_claim({**CLAIM,"source_urls":["https://example.net/not-recorded"]},self.claims,self.sources)
  def test_rejects_invalid_status(self):
