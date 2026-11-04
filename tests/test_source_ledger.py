@@ -34,12 +34,12 @@ class SourceLedgerTests(unittest.TestCase):
 
     def test_canonicalizes_idn_default_port_fragment_and_ipv6(self):
         self.assertEqual(
-            canonicalize_http_url("HTTPS://BÜCHER.example:443/report/#section"),
+            canonicalize_http_url("HTTPS://BÜCHER.example:443/report#section"),
             "https://xn--bcher-kva.example/report",
         )
         self.assertEqual(
             canonicalize_http_url("https://[2001:0db8:0:0::1]:443/report/"),
-            "https://[2001:db8::1]/report",
+            "https://[2001:db8::1]/report/",
         )
 
     def test_rejects_malformed_dns_hostname(self):
@@ -79,12 +79,26 @@ class SourceLedgerTests(unittest.TestCase):
             self.assertEqual(load_sources(path), [VALID])
             self.assertEqual(json.loads(path.read_text(encoding="utf-8")), [VALID])
 
-    def test_duplicate_url_is_rejected_case_and_trailing_slash_insensitive(self):
+    def test_duplicate_url_is_rejected_case_default_port_and_fragment_insensitive(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "sources.json"
             add_source(VALID, path)
             with self.assertRaisesRegex(SourceLedgerError, "already exists"):
-                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG:443/report/#section"}, path)
+                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG:443/report#section"}, path)
+
+    def test_path_trailing_slash_is_preserved_as_a_distinct_resource(self):
+        self.assertNotEqual(
+            canonicalize_http_url("https://example.org/report"),
+            canonicalize_http_url("https://example.org/report/"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sources.json"
+            add_source(VALID, path)
+            add_source({**VALID, "url": "https://example.org/report/"}, path)
+            self.assertEqual(len(load_sources(path)), 2)
+
+    def test_empty_path_canonicalizes_to_root(self):
+        self.assertEqual(canonicalize_http_url("HTTPS://EXAMPLE.ORG:443#top"), "https://example.org/")
 
     def test_missing_fields_are_rejected(self):
         with self.assertRaisesRegex(SourceLedgerError, "Missing required fields"):

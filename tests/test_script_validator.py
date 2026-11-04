@@ -24,6 +24,16 @@ class ScriptValidatorTests(unittest.TestCase):
     def test_unknown_claim_rejected(self):
         with self.assertRaisesRegex(ProjectValidationError,"absent from the claim ledger"):
             validate_project({**PROJECT,"claim_ids":["missing claim"]},[CLAIM],{SOURCE["url"]})
+    def test_asset_origin_matches_source_after_url_canonicalization(self):
+        asset = {**PROJECT["media_assets"][0], "origin_url": "HTTPS://EXAMPLE.ORG:443/report#asset"}
+        result = validate_project({**PROJECT, "media_assets": [asset]}, [CLAIM], {SOURCE["url"]})
+        self.assertEqual(result["media_assets"][0]["origin_url"], asset["origin_url"])
+
+    def test_asset_origin_with_distinct_trailing_slash_is_rejected(self):
+        asset = {**PROJECT["media_assets"][0], "origin_url": "https://example.org/report/"}
+        with self.assertRaisesRegex(ProjectValidationError, "not in source ledger"):
+            validate_project({**PROJECT, "media_assets": [asset]}, [CLAIM], {SOURCE["url"]})
+
     def test_unknown_asset_origin_rejected(self):
         asset={**PROJECT["media_assets"][0],"origin_url":"https://example.net/unknown"}
         with self.assertRaisesRegex(ProjectValidationError,"not in source ledger"):

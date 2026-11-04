@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 from app.research.claim_ledger import ClaimLedgerError, load_claims
-from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
+from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, canonicalize_http_url, load_sources
 DEFAULT_PROJECT = Path(__file__).resolve().parents[2] / "data" / "projects" / "sample_project.json"
 REQUIRED_PROJECT_FIELDS = ("project_id", "title", "language", "target_duration_seconds", "script", "claim_ids", "media_assets", "approval")
 SUPPORTED_LANGUAGES = {"ur", "en", "ru", "zh"}
@@ -39,11 +39,19 @@ def validate_project(project: dict[str, Any], claims: list[dict[str, Any]], sour
             if marker not in claim_ids: raise ProjectValidationError(f"Script cites a claim not listed in project claim_ids: {marker}")
     assets = project["media_assets"]
     if not isinstance(assets, list): raise ProjectValidationError("media_assets must be a JSON array.")
+    try:
+        known_source_keys = {canonicalize_http_url(url) for url in source_urls}
+    except SourceLedgerError as exc:
+        raise ProjectValidationError(f"Source ledger contains an invalid URL: {exc}") from exc
     for index, asset in enumerate(assets):
         if not isinstance(asset, dict): raise ProjectValidationError(f"media_assets[{index}] must be an object.")
         for key in ("asset_id", "origin_url", "rights_status", "creator", "attribution", "usage_scope", "rights_evidence", "notes"):
             if not isinstance(asset.get(key), str) or not asset[key].strip(): raise ProjectValidationError(f"media_assets[{index}].{key} must be a non-empty string.")
-        if asset["origin_url"] not in source_urls: raise ProjectValidationError(f"Media asset origin URL is not in source ledger: {asset['origin_url']}")
+        try:
+            origin_key = canonicalize_http_url(asset["origin_url"])
+        except SourceLedgerError as exc:
+            raise ProjectValidationError(f"Media asset origin URL is invalid: {exc}") from exc
+        if origin_key not in known_source_keys: raise ProjectValidationError(f"Media asset origin URL is not in source ledger: {asset['origin_url']}")
         if asset["rights_status"] not in {"licensed", "permission_granted", "public_domain_verified", "original", "unknown", "restricted"}: raise ProjectValidationError(f"Unsupported rights_status for media_assets[{index}].")
     approval = project["approval"]
     if not isinstance(approval, dict): raise ProjectValidationError("approval must be a JSON object.")

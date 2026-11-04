@@ -18,6 +18,12 @@ Repeat `--source-url` for each additional source. A URL must already be recorded
 
 By default, claims are stored in `data/sources/claims.json`. Use `--sources-file` and `--claims-file` for isolated fixtures or alternate ledgers.
 
+## URL identity and matching
+
+Source-to-claim and media-origin references use a conservative comparison key: scheme and hostname case, IDNA hostname form, compressed IPv6 literals, default HTTP(S) ports, URL fragments, and an empty root path are normalized. A non-root path's trailing slash is preserved because `/report` and `/report/` can identify different HTTP resources. The submitted URL remains in the ledger and evidence output.
+
+This is syntax and reference matching only. URLs are not fetched, redirects are not followed, and canonical matching does not prove that a page exists, supports a claim, or is legally reusable.
+
 ## Editorial review checklist
 
 - Does each source actually support the wording of the claim?

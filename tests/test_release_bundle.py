@@ -21,6 +21,31 @@ class ReleaseBundleTests(unittest.TestCase):
   self.srt=self.root/'final.srt'; self.srt.write_text('1\n00:00:00,000 --> 00:00:01,000\nSynthetic caption.\n',encoding='utf-8')
   self.metadata=self.root/'metadata.json'; self.metadata.write_text(json.dumps({'publish_ready':False,'release_blockers':['Human approval missing']}),encoding='utf-8')
  def tearDown(self): self.temp.cleanup()
+ def test_bundle_resolves_canonical_equivalent_claim_source_url(self):
+  submitted_url="HTTPS://EXAMPLE.ORG:443/report#section"
+  records=json.loads(self.claims.read_text(encoding="utf-8"))
+  records[0]["source_urls"]=[submitted_url]
+  self.claims.write_text(json.dumps(records),encoding="utf-8")
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  reference=bundle["claim_evidence"][0]["sources"][0]
+  self.assertTrue(reference["in_source_ledger"])
+  self.assertFalse(reference["ambiguous"])
+  self.assertEqual(reference["url"],submitted_url)
+  self.assertEqual(reference["matched_source_url"],SOURCE["url"])
+  self.assertEqual(bundle["citation_validation"]["source_references_in_ledger"],1)
+  self.assertEqual(bundle["citation_validation"]["unresolved_source_references"],0)
+
+ def test_bundle_blocks_ambiguous_duplicate_canonical_source_entries(self):
+  records=json.loads(self.sources.read_text(encoding="utf-8"))
+  records.append({**SOURCE,"url":"HTTPS://EXAMPLE.ORG:443/report#duplicate","title":"Conflicting duplicate source"})
+  self.sources.write_text(json.dumps(records),encoding="utf-8")
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  reference=bundle["claim_evidence"][0]["sources"][0]
+  self.assertFalse(reference["in_source_ledger"])
+  self.assertTrue(reference["ambiguous"])
+  self.assertEqual(bundle["citation_validation"]["unresolved_source_references"],1)
+  self.assertTrue(any("duplicate canonical URL group" in item for item in bundle["release_blockers"]))
+
  @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1,'audio_duration_seconds':1.0,'audio_start_time_seconds':0.0})
  def test_bundle_hashes_inputs_and_never_marks_publish_ready(self,probe):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)

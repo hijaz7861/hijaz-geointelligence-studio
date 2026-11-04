@@ -8,7 +8,7 @@ from typing import Any
 from app.editorial.script_validator import ProjectValidationError, release_blockers, validate_project_file
 from app.publishing.approval_receipts import ApprovalReceiptError, verify_approval_receipts
 from app.research.claim_ledger import DEFAULT_CLAIMS, ClaimLedgerError, load_claims
-from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
+from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, canonicalize_http_url, load_sources
 from app.video.render_validator import RenderValidationError, inspect_rendered_video
 from app.voice.srt_validator import SubtitleValidationError, validate_srt_file
 class ReleaseBundleError(ValueError):
@@ -34,7 +34,20 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     blockers.extend(release_blockers(project,claims))
     linked={item["claim"] for item in claims if item.get("claim") in project.get("claim_ids",[])}
     if len(linked)!=len(project.get("claim_ids",[])): blockers.append("One or more project claim references could not be resolved.")
-    source_by_url={item["url"]:item for item in sources}
+    source_by_url: dict[str, dict[str, str]] = {}
+    ambiguous_source_urls: set[str] = set()
+    for item in sources:
+        canonical_url = canonicalize_http_url(item["url"])
+        if canonical_url in source_by_url:
+            ambiguous_source_urls.add(canonical_url)
+        else:
+            source_by_url[canonical_url] = item
+    for canonical_url in ambiguous_source_urls:
+        source_by_url.pop(canonical_url, None)
+    if ambiguous_source_urls:
+        blockers.append(
+            f"Source ledger contains {len(ambiguous_source_urls)} duplicate canonical URL group(s); resolve ambiguous source entries."
+        )
     claim_by_text={item["claim"]:item for item in claims}
     claim_evidence=[]
     for text in project.get("claim_ids",[]):
@@ -42,9 +55,14 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         if not claim: continue
         refs=[]
         for url in claim.get("source_urls",[]):
-            source=source_by_url.get(url)
-            refs.append({"url":url,"in_source_ledger":source is not None,"title":source.get("title") if source else None,"source_type":source.get("source_type") if source else None,"published_at":source.get("published_at") if source else None})
-            if source is None: blockers.append(f"Claim source is missing from source ledger: {url}")
+            canonical_url = canonicalize_http_url(url)
+            ambiguous = canonical_url in ambiguous_source_urls
+            source = source_by_url.get(canonical_url)
+            refs.append({"url":url,"matched_source_url":source.get("url") if source else None,"in_source_ledger":source is not None,"ambiguous":ambiguous,"title":source.get("title") if source else None,"source_type":source.get("source_type") if source else None,"published_at":source.get("published_at") if source else None})
+            if ambiguous:
+                blockers.append(f"Claim source URL maps to multiple source ledger entries: {url}")
+            elif source is None:
+                blockers.append(f"Claim source is missing from source ledger: {url}")
         claim_evidence.append({"claim":text,"status":claim.get("status"),"sources":refs,"notes":"Source linkage is metadata evidence, not independent factual verification."})
     citation_refs=[source for claim in claim_evidence for source in claim["sources"]]
     citation_validation={

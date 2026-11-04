@@ -84,7 +84,8 @@ def canonicalize_http_url(url: str) -> str:
     if port == (443 if scheme == "https" else 80):
         port = None
     netloc = host if port is None else f"{host}:{port}"
-    return urlunsplit((scheme, netloc, parsed.path.rstrip("/"), parsed.query, ""))
+    path = parsed.path or "/"
+    return urlunsplit((scheme, netloc, path, parsed.query, ""))
 
 
 def _canonical_url(url: str) -> str:
