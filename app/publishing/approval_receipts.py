@@ -109,11 +109,66 @@ def _validate_reviewed_at(value: str) -> str:
     return parsed.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def _read_receipt_document(path: str | Path) -> dict[str, Any]:
+MAX_RECEIPT_DOCUMENT_BYTES = 1024 * 1024
+
+
+def _receipt_path(path: str | Path) -> Path:
+    """Resolve only the parent directory and reject unsafe final path components."""
+    requested = Path(path).expanduser()
+    if not requested.name:
+        raise ApprovalReceiptError("Approval receipts path must name a file.")
+    output = requested.parent.resolve() / requested.name
     try:
-        document = json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ApprovalReceiptError(f"Cannot read approval receipts JSON: {exc}") from exc
+        info = output.lstat()
+    except FileNotFoundError:
+        return output
+    except OSError as exc:
+        raise ApprovalReceiptError(f"Cannot inspect approval receipts path: {exc}") from exc
+    if stat.S_ISLNK(info.st_mode):
+        raise ApprovalReceiptError("Approval receipts path must not be a symlink.")
+    if not stat.S_ISREG(info.st_mode):
+        raise ApprovalReceiptError("Approval receipts path must be a regular file.")
+    return output
+
+
+def _read_receipt_document(path: str | Path) -> dict[str, Any]:
+    receipt_path = _receipt_path(path)
+    flags = os.O_RDONLY
+    if os.name == "posix":
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        if nofollow is None:
+            raise ApprovalReceiptError("This POSIX platform lacks O_NOFOLLOW; approval receipts cannot be opened safely.")
+        flags |= nofollow
+        flags |= getattr(os, "O_CLOEXEC", 0)
+        flags |= getattr(os, "O_NONBLOCK", 0)
+
+    fd: int | None = None
+    try:
+        fd = os.open(receipt_path, flags)
+        file_info = os.fstat(fd)
+        if not stat.S_ISREG(file_info.st_mode):
+            raise ApprovalReceiptError("Approval receipts path must be a regular file.")
+        if file_info.st_size > MAX_RECEIPT_DOCUMENT_BYTES:
+            raise ApprovalReceiptError("Approval receipts document exceeds the 1 MiB size limit.")
+        with os.fdopen(fd, "rb") as stream:
+            fd = None
+            raw = stream.read(MAX_RECEIPT_DOCUMENT_BYTES + 1)
+        if len(raw) > MAX_RECEIPT_DOCUMENT_BYTES:
+            raise ApprovalReceiptError("Approval receipts document exceeds the 1 MiB size limit.")
+        try:
+            document = json.loads(raw.decode("utf-8"))
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise ApprovalReceiptError(f"Cannot read approval receipts JSON: {exc}") from exc
+    except ApprovalReceiptError:
+        raise
+    except OSError as exc:
+        if getattr(exc, "errno", None) == errno.ELOOP:
+            raise ApprovalReceiptError("Approval receipts path must not be a symlink.") from exc
+        raise ApprovalReceiptError(f"Cannot safely open approval receipts: {exc}") from exc
+    finally:
+        if fd is not None:
+            os.close(fd)
+
     if not isinstance(document, dict) or document.get("schema_version") != "1.0":
         raise ApprovalReceiptError("Approval receipts must use schema_version 1.0.")
     if not isinstance(document.get("receipts"), list):
@@ -122,15 +177,23 @@ def _read_receipt_document(path: str | Path) -> dict[str, Any]:
 
 
 def _write_receipt_document(path: str | Path, document: dict[str, Any]) -> Path:
-    output = Path(path).expanduser().resolve()
+    output = _receipt_path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
+    serialized = json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    if len(serialized.encode("utf-8")) > MAX_RECEIPT_DOCUMENT_BYTES:
+        raise ApprovalReceiptError("Approval receipts document exceeds the 1 MiB size limit.")
     temporary: Path | None = None
     try:
         import tempfile
         with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=output.parent, prefix=f".{output.name}.", suffix=".tmp", delete=False) as stream:
             temporary = Path(stream.name)
-            json.dump(document, stream, ensure_ascii=False, indent=2, sort_keys=True)
-            stream.write("\n")
+            if os.name == "posix":
+                os.fchmod(stream.fileno(), 0o600)
+            stream.write(serialized)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # os.replace replaces a raced-in symlink itself; it never writes through
+        # that link to its target. The temp file is created in the same directory.
         temporary.replace(output)
     except OSError as exc:
         raise ApprovalReceiptError(f"Cannot write approval receipts: {exc}") from exc
@@ -138,7 +201,6 @@ def _write_receipt_document(path: str | Path, document: dict[str, Any]) -> Path:
         if temporary is not None and temporary.exists():
             temporary.unlink()
     return output
-
 
 def record_approval(
     project_path: str | Path,
@@ -166,7 +228,7 @@ def record_approval(
     if stage != "final_video_reviewed" and artifact_path is not None:
         raise ApprovalReceiptError("Only final_video_reviewed accepts an --artifact path.")
     project = Path(project_path).expanduser().resolve()
-    receipts = Path(receipts_path).expanduser().resolve()
+    receipts = _receipt_path(receipts_path)
     key_input = Path(key_path).expanduser()
     key_file = key_input.resolve()
     artifact = Path(artifact_path).expanduser().resolve() if artifact_path is not None else None

@@ -131,6 +131,39 @@ class ApprovalReceiptTests(unittest.TestCase):
                 reason="Reviewed the script text.",
             )
 
+    def test_record_approval_rejects_symlink_receipts_without_modifying_target(self):
+        if os.name != "posix":
+            self.skipTest("POSIX symlink semantics are unavailable")
+        target = self.root / "existing-receipts.json"
+        original = json.dumps({"schema_version": "1.0", "receipts": []})
+        target.write_text(original, encoding="utf-8")
+        linked_receipts = self.root / "linked-receipts.json"
+        linked_receipts.symlink_to(target)
+        with self.assertRaisesRegex(ApprovalReceiptError, "receipts path must not be a symlink"):
+            record_approval(
+                self.project, linked_receipts, self.key, stage="script_reviewed",
+                decision="approved", reviewer="Human reviewer",
+                reason="Reviewed the script text.",
+            )
+        self.assertEqual(target.read_text(encoding="utf-8"), original)
+        self.assertTrue(linked_receipts.is_symlink())
+
+    def test_receipt_verifier_rejects_symlink_document(self):
+        if os.name != "posix":
+            self.skipTest("POSIX symlink semantics are unavailable")
+        target = self.root / "receipt-document.json"
+        target.write_text(json.dumps({"schema_version": "1.0", "receipts": []}), encoding="utf-8")
+        linked_receipts = self.root / "linked-document.json"
+        linked_receipts.symlink_to(target)
+        with self.assertRaisesRegex(ApprovalReceiptError, "receipts path must not be a symlink"):
+            verify_approval_receipts(self.project, linked_receipts, self.key, render_path=self.render)
+
+    def test_receipt_document_size_limit_is_enforced(self):
+        oversized = self.root / "oversized-receipts.json"
+        oversized.write_bytes(b" " * (1024 * 1024 + 1))
+        with self.assertRaisesRegex(ApprovalReceiptError, "1 MiB size limit"):
+            verify_approval_receipts(self.project, oversized, self.key, render_path=self.render)
+
     def test_key_reader_rejects_non_regular_file(self):
         with self.assertRaisesRegex(ApprovalReceiptError, "regular file"):
             record_approval(
