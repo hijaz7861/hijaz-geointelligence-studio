@@ -203,7 +203,7 @@ class ApprovalReceiptTests(unittest.TestCase):
         self.assertIn(marker, raw)
         raw = raw.replace(
             marker,
-            marker + '\\n        "reviewer": "Spoofed reviewer",',
+            marker + '\n        "reviewer": "Spoofed reviewer",',
             1,
         )
         self.receipts.write_text(raw, encoding="utf-8")
