@@ -54,7 +54,7 @@ class ReleaseBundleTests(unittest.TestCase):
   project_entry=next(item for item in bundle['input_files'] if item['label']=='project')
   self.assertEqual(project_entry['sha256'],sha256_file(self.project))
   self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
-  probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,min_width=1280,min_height=720)
+  probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,require_video_cover_audio=True,min_width=1280,min_height=720)
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
   self.assertEqual(bundle['citation_validation']['validation'],'LEDGER_LINKAGE_ONLY')
   self.assertEqual(bundle['citation_validation']['source_references_in_ledger'],1)
