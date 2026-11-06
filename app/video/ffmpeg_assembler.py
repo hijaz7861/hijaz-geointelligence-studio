@@ -46,7 +46,9 @@ def assemble_video(video_path: str | Path, audio_path: str | Path, output_path: 
     command += ["-map", "0:v:0", "-map", "1:a:0"]
     if subtitles is not None:
         command += ["-map", "2:s:0", "-c:s", "mov_text"]
-    command += ["-c:v", "libx264", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", str(temp_output)]
+    # Avoid -shortest: sparse subtitle packets can truncate video while buffered audio continues.
+    # The render validator checks that the video covers the complete audio interval.
+    command += ["-c:v", "libx264", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(temp_output)]
     try:
         try:
             result = subprocess.run(command, capture_output=True, text=True, timeout=timeout_seconds, check=False)
