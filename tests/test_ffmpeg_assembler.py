@@ -20,6 +20,7 @@ class FfmpegAssemblerTests(unittest.TestCase):
         args,kwargs=run.call_args
         self.assertIsInstance(args[0],list); self.assertFalse(kwargs.get('shell',False))
         self.assertIn('mov_text',args[0]); self.assertIn('-nostdin',args[0])
+        self.assertNotIn('-shortest', args[0])
     @patch('app.video.ffmpeg_assembler.shutil.which',return_value='/usr/bin/ffmpeg')
     @patch('app.video.ffmpeg_assembler.subprocess.run')
     def test_rejects_invalid_srt_before_running_ffmpeg(self,run,which):
