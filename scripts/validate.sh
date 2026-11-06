@@ -42,6 +42,7 @@ grep -q -- '--translated' "$TMP_DIR/translation-help.txt"
 grep -q -- '--port' "$TMP_DIR/dashboard-help.txt"
 "$PYTHON" scripts/validate_render.py --help > "$TMP_DIR/render-validation-help.txt"
 grep -q -- '--require-subtitles' "$TMP_DIR/render-validation-help.txt"
+grep -q -- '--require-video-cover-audio' "$TMP_DIR/render-validation-help.txt"
 "$PYTHON" scripts/import_feeds.py --help > "$TMP_DIR/feed-help.txt"
 grep -q -- '--max-items-per-feed' "$TMP_DIR/feed-help.txt"
 "$PYTHON" scripts/build_release_bundle.py --help > "$TMP_DIR/release-bundle-help.txt"
@@ -106,7 +107,7 @@ printf 'PASS: SRT validation CLI\n'
 
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   printf '\n[8/23] Optional FFmpeg end-to-end smoke render\n'
-  ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=1' -t 1 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
+  ffmpeg -hide_banner -loglevel error -f lavfi -i 'color=c=blue:s=320x240:r=25:d=3' -t 3 -an -c:v libx264 -pix_fmt yuv420p -y "$TMP_DIR/source.mp4"
   ffmpeg -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=0.8' -c:a pcm_s16le -y "$TMP_DIR/narration.wav"
   cat > "$TMP_DIR/render.srt" <<'SRT'
 1
@@ -115,7 +116,7 @@ Synthetic render test.
 SRT
   "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/final.mp4" > "$TMP_DIR/render.json"
   grep -q '"render": "PASS"' "$TMP_DIR/render.json"
-  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/final.mp4" --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/render-validation.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/final.mp4" --require-subtitles --require-video-cover-audio --min-width 320 --min-height 240 > "$TMP_DIR/render-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/render-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/final.mp4" > "$TMP_DIR/streams.txt"
   grep -q 'video' "$TMP_DIR/streams.txt"
@@ -188,7 +189,7 @@ if { command -v espeak-ng >/dev/null 2>&1 || command -v espeak >/dev/null 2>&1; 
   printf '\n[13/23] Optional narration-to-video integration\n'
   "$PYTHON" scripts/render_video.py --video "$TMP_DIR/source.mp4" --audio "$TMP_DIR/tts-narration.wav" --subtitles "$TMP_DIR/render.srt" --output "$TMP_DIR/narrated-final.mp4" > "$TMP_DIR/narrated-render.json"
   grep -q '"render": "PASS"' "$TMP_DIR/narrated-render.json"
-  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/narrated-final.mp4" --require-subtitles --min-width 320 --min-height 240 > "$TMP_DIR/narrated-validation.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/narrated-final.mp4" --require-subtitles --require-video-cover-audio --min-width 320 --min-height 240 > "$TMP_DIR/narrated-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/narrated-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/narrated-final.mp4" > "$TMP_DIR/narrated-streams.txt"
   grep -q 'video' "$TMP_DIR/narrated-streams.txt"
@@ -290,7 +291,7 @@ Synthetic cinematic subtitle smoke test.
 SRT
   "$PYTHON" scripts/render_video.py --video "$TMP_DIR/cinematic-scene.mp4" --audio "$TMP_DIR/cinematic-audio.wav" --subtitles "$TMP_DIR/cinematic.srt" --output "$TMP_DIR/cinematic-final.mp4" > "$TMP_DIR/cinematic-final-result.json"
   grep -q '"render": "PASS"' "$TMP_DIR/cinematic-final-result.json"
-  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/cinematic-final.mp4" --require-subtitles --min-width 1280 --min-height 720 > "$TMP_DIR/cinematic-final-validation.json"
+  "$PYTHON" scripts/validate_render.py --video "$TMP_DIR/cinematic-final.mp4" --require-subtitles --require-video-cover-audio --min-width 1280 --min-height 720 > "$TMP_DIR/cinematic-final-validation.json"
   grep -q '"validation": "PASS"' "$TMP_DIR/cinematic-final-validation.json"
   ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$TMP_DIR/cinematic-final.mp4" > "$TMP_DIR/cinematic-final-streams.txt"
   grep -q 'video' "$TMP_DIR/cinematic-final-streams.txt"
