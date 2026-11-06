@@ -196,5 +196,38 @@ class ApprovalReceiptTests(unittest.TestCase):
                 reason="Reviewed the script text.",
             )
 
+    def test_receipt_document_rejects_duplicate_nested_json_keys(self):
+        self.record_all()
+        raw = self.receipts.read_text(encoding="utf-8")
+        marker = '"reviewer": "Human reviewer",'
+        self.assertIn(marker, raw)
+        raw = raw.replace(
+            marker,
+            marker + '\n        "reviewer": "Spoofed reviewer",',
+            1,
+        )
+        self.receipts.write_text(raw, encoding="utf-8")
+        with self.assertRaisesRegex(ApprovalReceiptError, "duplicate JSON object key: reviewer"):
+            verify_approval_receipts(self.project, self.receipts, self.key, render_path=self.render)
+
+    def test_receipt_document_rejects_nonstandard_json_constants(self):
+        raw = '{"schema_version":"1.0","receipts":[],"unexpected":NaN}'
+        self.receipts.write_text(raw, encoding="utf-8")
+        with self.assertRaisesRegex(ApprovalReceiptError, "non-standard JSON constant: NaN"):
+            verify_approval_receipts(self.project, self.receipts, self.key, render_path=self.render)
+
+    def test_project_json_rejects_duplicate_identity_keys(self):
+        self.project.write_text(
+            '{"project_id":"approval-fixture","project_id":"spoofed-project"}',
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ApprovalReceiptError, "duplicate JSON object key: project_id"):
+            record_approval(
+                self.project, self.receipts, self.key,
+                stage="script_reviewed", decision="approved",
+                reviewer="Human reviewer",
+                reason="Reviewed the script text.",
+            )
+
 if __name__ == "__main__":
     unittest.main()

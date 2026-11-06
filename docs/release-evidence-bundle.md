@@ -36,6 +36,8 @@ The project JSON approval booleans remain a checklist; they are not sufficient e
 
 HMAC verifies receipt integrity and possession of a shared secret. The reviewer name is self-asserted; HMAC does not independently authenticate legal identity or provide non-repudiation between multiple people sharing the same key. Use a separately governed identity/signature system if that assurance is required. The key is never included in the evidence bundle.
 
+Receipt and project JSON are parsed strictly: duplicate object keys and non-standard `NaN`/`Infinity` constants are rejected. This avoids ambiguous field interpretation across parsers before receipt signatures and project identity are evaluated.
+
 ## Citation and rights interpretation
 
 - Claim/source entries preserve claim status and source-ledger URL, title, source type, and publication date. This proves ledger linkage only; it does not prove that a source supports the claim or that the claim is true.

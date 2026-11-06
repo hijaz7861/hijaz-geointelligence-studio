@@ -83,14 +83,44 @@ def _read_key(path: str | Path) -> bytes:
     return key
 
 
+def _reject_duplicate_json_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """Reject ambiguous JSON objects instead of silently keeping the last key."""
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object key: {key}")
+        result[key] = value
+    return result
+
+
+def _reject_nonstandard_json_constant(value: str) -> Any:
+    """Reject NaN and Infinity, which are not valid JSON values."""
+    raise ValueError(f"non-standard JSON constant: {value}")
+
+
+def _strict_json_loads(raw: str | bytes) -> Any:
+    """Parse JSON without duplicate keys or non-standard numeric constants."""
+    return json.loads(
+        raw,
+        object_pairs_hook=_reject_duplicate_json_keys,
+        parse_constant=_reject_nonstandard_json_constant,
+    )
+
+
 def _canonical_payload(payload: dict[str, Any]) -> bytes:
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
 
 
 def _project_id(project_path: str | Path) -> str:
     try:
-        project = json.loads(Path(project_path).expanduser().read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        project = _strict_json_loads(Path(project_path).expanduser().read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         raise ApprovalReceiptError(f"Cannot read project JSON: {exc}") from exc
     if not isinstance(project, dict) or not isinstance(project.get("project_id"), str) or not project["project_id"].strip():
         raise ApprovalReceiptError("Project must contain a non-empty project_id.")
@@ -156,8 +186,8 @@ def _read_receipt_document(path: str | Path) -> dict[str, Any]:
         if len(raw) > MAX_RECEIPT_DOCUMENT_BYTES:
             raise ApprovalReceiptError("Approval receipts document exceeds the 1 MiB size limit.")
         try:
-            document = json.loads(raw.decode("utf-8"))
-        except (UnicodeError, json.JSONDecodeError) as exc:
+            document = _strict_json_loads(raw.decode("utf-8"))
+        except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
             raise ApprovalReceiptError(f"Cannot read approval receipts JSON: {exc}") from exc
     except ApprovalReceiptError:
         raise
