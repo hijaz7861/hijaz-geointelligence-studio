@@ -65,7 +65,7 @@ class RenderValidatorTests(unittest.TestCase):
         second_audio = dict(PROBE["streams"][1], index=3, duration="13.0")
         data["streams"].insert(2, second_audio)
         run.return_value = Mock(returncode=0, stdout=json.dumps(data), stderr="")
-        with self.assertRaisesRegex(RenderValidationError, "Video stream ends before audio stream end \(stream 2\)"):
+        with self.assertRaisesRegex(RenderValidationError, r"Video stream ends before audio stream end \(stream 2\)"):
             inspect_rendered_video(self.file, require_video_cover_audio=True)
 
     @patch("app.video.render_validator.shutil.which", return_value="/usr/bin/ffprobe")
