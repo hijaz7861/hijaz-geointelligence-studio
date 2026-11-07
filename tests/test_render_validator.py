@@ -46,6 +46,41 @@ class RenderValidatorTests(unittest.TestCase):
 
     @patch("app.video.render_validator.shutil.which", return_value="/usr/bin/ffprobe")
     @patch("app.video.render_validator.subprocess.run")
+    def test_accepts_multiple_audio_streams_when_each_is_covered(self, run, which):
+        data = json.loads(json.dumps(PROBE))
+        second_audio = dict(PROBE["streams"][1], index=3, start_time="0.5", duration="11.5")
+        data["streams"].insert(2, second_audio)
+        run.return_value = Mock(returncode=0, stdout=json.dumps(data), stderr="")
+        result = inspect_rendered_video(self.file, require_video_cover_audio=True)
+        coverage = result["video_audio_coverage"]
+        self.assertEqual(coverage["audio_stream_count"], 2)
+        self.assertEqual(len(coverage["audio_streams"]), 2)
+        self.assertEqual(coverage["audio_streams"][1]["stream_index"], 3)
+        self.assertEqual(coverage["audio_streams"][1]["end_time_seconds"], 12.0)
+
+    @patch("app.video.render_validator.shutil.which", return_value="/usr/bin/ffprobe")
+    @patch("app.video.render_validator.subprocess.run")
+    def test_rejects_secondary_audio_stream_ending_after_video(self, run, which):
+        data = json.loads(json.dumps(PROBE))
+        second_audio = dict(PROBE["streams"][1], index=3, duration="13.0")
+        data["streams"].insert(2, second_audio)
+        run.return_value = Mock(returncode=0, stdout=json.dumps(data), stderr="")
+        with self.assertRaisesRegex(RenderValidationError, "Video stream ends before audio stream end \(stream 2\)"):
+            inspect_rendered_video(self.file, require_video_cover_audio=True)
+
+    @patch("app.video.render_validator.shutil.which", return_value="/usr/bin/ffprobe")
+    @patch("app.video.render_validator.subprocess.run")
+    def test_rejects_secondary_audio_stream_missing_start_time(self, run, which):
+        data = json.loads(json.dumps(PROBE))
+        second_audio = dict(PROBE["streams"][1], index=3, duration="11.5")
+        second_audio.pop("start_time")
+        data["streams"].insert(2, second_audio)
+        run.return_value = Mock(returncode=0, stdout=json.dumps(data), stderr="")
+        with self.assertRaisesRegex(RenderValidationError, "Audio stream duration/start time.*stream 2"):
+            inspect_rendered_video(self.file, require_video_cover_audio=True)
+
+    @patch("app.video.render_validator.shutil.which", return_value="/usr/bin/ffprobe")
+    @patch("app.video.render_validator.subprocess.run")
     def test_rejects_video_ending_before_audio(self, run, which):
         data = json.loads(json.dumps(PROBE))
         data["streams"][0]["duration"] = "10.0"
