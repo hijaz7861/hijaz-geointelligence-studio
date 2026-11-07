@@ -99,12 +99,24 @@ def inspect_rendered_video(
 
     video_duration = _finite_seconds(primary.get("duration"))
     video_start = _finite_seconds(primary.get("start_time"))
-    audio_duration = _finite_seconds(audios[0].get("duration")) if audios else None
-    audio_start = _finite_seconds(audios[0].get("start_time")) if audios else None
+    audio_timings = []
+    for audio_number, audio_stream in enumerate(audios, start=1):
+        duration = _finite_seconds(audio_stream.get("duration"))
+        start = _finite_seconds(audio_stream.get("start_time"))
+        if duration is not None and duration <= 0:
+            duration = None
+        stream_index = audio_stream.get("index")
+        if not isinstance(stream_index, int) or isinstance(stream_index, bool):
+            stream_index = audio_number - 1
+        audio_timings.append({
+            "stream_index": stream_index,
+            "duration_seconds": duration,
+            "start_time_seconds": start,
+        })
+    audio_duration = audio_timings[0]["duration_seconds"] if audio_timings else None
+    audio_start = audio_timings[0]["start_time_seconds"] if audio_timings else None
     if video_duration is not None and video_duration <= 0:
         video_duration = None
-    if audio_duration is not None and audio_duration <= 0:
-        audio_duration = None
 
     coverage_report = None
     if require_video_cover_audio:
@@ -112,27 +124,42 @@ def inspect_rendered_video(
             raise RenderValidationError("Video/audio coverage requires an audio stream.")
         if video_duration is None or video_start is None:
             raise RenderValidationError("Video stream duration/start time is unavailable for audio coverage validation.")
-        if audio_duration is None or audio_start is None:
-            raise RenderValidationError("Audio stream duration/start time is unavailable for video coverage validation.")
 
         video_end = video_start + video_duration
-        audio_end = audio_start + audio_duration
         tolerance = float(video_audio_tolerance_seconds)
-        if video_start > audio_start + tolerance:
-            gap = video_start - audio_start
-            raise RenderValidationError(
-                f"Video stream starts after audio stream start by {gap:.3f} seconds."
-            )
-        if video_end + tolerance < audio_end:
-            overrun = audio_end - video_end
-            raise RenderValidationError(
-                f"Video stream ends before audio stream end by {overrun:.3f} seconds."
-            )
+        covered_audio_streams = []
+        for audio_number, timing in enumerate(audio_timings, start=1):
+            duration = timing["duration_seconds"]
+            start = timing["start_time_seconds"]
+            if duration is None or start is None:
+                raise RenderValidationError(
+                    f"Audio stream duration/start time is unavailable for video coverage validation (stream {audio_number})."
+                )
+            audio_end = start + duration
+            if video_start > start + tolerance:
+                gap = video_start - start
+                raise RenderValidationError(
+                    f"Video stream starts after audio stream start (stream {audio_number}) by {gap:.3f} seconds."
+                )
+            if video_end + tolerance < audio_end:
+                overrun = audio_end - video_end
+                raise RenderValidationError(
+                    f"Video stream ends before audio stream end (stream {audio_number}) by {overrun:.3f} seconds."
+                )
+            covered_audio_streams.append({
+                "stream_index": timing["stream_index"],
+                "start_time_seconds": round(start, 3),
+                "duration_seconds": round(duration, 3),
+                "end_time_seconds": round(audio_end, 3),
+                "validation": "PASS",
+            })
         coverage_report = {
             "validation": "PASS",
             "tolerance_seconds": round(tolerance, 3),
             "video_end_seconds": round(video_end, 3),
-            "audio_end_seconds": round(audio_end, 3),
+            "audio_end_seconds": covered_audio_streams[0]["end_time_seconds"],
+            "audio_stream_count": len(covered_audio_streams),
+            "audio_streams": covered_audio_streams,
         }
 
     return {
