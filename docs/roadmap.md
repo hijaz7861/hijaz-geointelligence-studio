@@ -32,7 +32,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Block media with unknown or restricted rights at the release checklist stage.
 - [x] Add optional offline eSpeak WAV narration for installed language voices with timeout, output-safety, and no-silent-fallback checks.
 - [x] Add a repeatable synthetic integration check that assembles generated narration, video, and SRT into one MP4 and verifies all three streams.
-- [ ] Add high-quality human/cloud narration provider for languages/voices not installed locally (Urdu is not available in the current validation environment).
+- [x] Add an optional, explicitly online Edge neural TTS adapter with Pakistan Urdu Asad/Uzma voice IDs, English/Russian/Mandarin choices, byte/time limits, safe temporary outputs, and mocked tests.
+- [ ] Run a live Urdu voice sample and obtain human pronunciation/dialect review; external service availability and terms remain outside CI guarantees.
 - [x] Add a deterministic frame-based MP4 renderer with optional Natural Earth GeoJSON overlay, visible attribution/license metadata, and CI-rendered review artifacts.
 - [x] Bundle a generalized Natural Earth public-domain/CC0 world-country map layer with source notice and attribution.
 - [x] Add a reproducible source-linked English documentary sample with Urdu translation, bilingual subtitles, offline English narration, Natural Earth MP4 render, and non-publishing release evidence bundle.
@@ -69,4 +70,12 @@ The project is not production-complete until a sample documentary can be traced 
 - [x] PR #24 merged: Natural Earth GeoJSON overlay supported directly in MP4 frames; CI renders a 1280×720 map, muxes test audio/SRT, and uploads review artifacts. Merge commit: `1812a53d2517aa246b718ec6b7cfe36b93a190ce`.
 - [x] PR #25 draft branch: source-grounded English/Urdu sample documentary; CI generated a 35-second H.264 MP4 with English eSpeak narration and bilingual subtitles, validated all streams, and created a blocked release evidence bundle. **159 unit tests and all 23 validation stages passed** on the current PR head.
 - [ ] Human editor must review the actual sample script, Urdu translation, English synthetic voice, map treatment, rights evidence, and final MP4 before approving publication.
-- [ ] Production Urdu narration provider, robust audio/subtitle synchronization metrics, advanced camera moves/graphics, richer timeline, secure authenticated editorial dashboard, and YouTube upload integration remain unfinished.
+- [ ] Human-approved Urdu voice sample, robust audio/subtitle synchronization metrics, advanced camera moves/graphics, richer timeline, secure authenticated editorial dashboard, and YouTube upload integration remain unfinished.
+
+
+## Optional Urdu neural TTS branch
+
+- [x] Add `edge-tts` as an opt-in dependency (not part of the default install).
+- [x] Add explicit Pakistan Urdu neural voices `ur-PK-AsadNeural` and `ur-PK-UzmaNeural` plus English, Russian, and Mandarin voice choices.
+- [x] Add output-path, voice allowlist, text-size, rate, timeout, and no-overwrite safeguards with unit tests.
+- [ ] Run a live Urdu sample only after an explicit decision to send the script to the online provider; review voice quality before production use.
