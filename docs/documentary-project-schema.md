@@ -21,3 +21,18 @@ Each asset records `asset_id`, `origin_url`, `rights_status`, `creator`, `attrib
 ## Release gate
 
 A structurally valid project is not automatically publishable. The release checklist also blocks unresolved `unverified` claims, uncleared media, and missing human review for the script, translation, rights, and final video. Public publishing must remain a separate explicit action after a human editor confirms the package.
+
+
+## Optional online neural narration (opt-in)
+
+The repository includes an optional `edge-tts` adapter for natural-sounding online voices, including Urdu (Pakistan) `ur-PK-AsadNeural` and `ur-PK-UzmaNeural`, Urdu (India), English, Russian, and Mandarin voice IDs. Install it separately:
+
+```bash
+python3 -m pip install -r requirements-edge-tts.txt
+python3 scripts/generate_edge_narration.py \
+  --text-file data/projects/world-map-literacy/script.ur.md \
+  --voice ur-PK-AsadNeural \
+  --output /tmp/urdu-narration.mp3
+```
+
+This sends the supplied narration text to Microsoft's online Edge TTS service; it is not offline, does not have a service-level guarantee in this project, and must not be used for confidential/unapproved research without an explicit data-sharing decision. The adapter has a 3,500-byte per-request limit; split longer scripts by scene. Review pronunciation, dialect, names, pacing, and the provider's current terms before release. The default CI suite tests safety and error handling with mocks and does not make external TTS requests.
