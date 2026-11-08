@@ -67,7 +67,7 @@ The project is not production-complete until a sample documentary can be traced 
 
 ## Verified implementation milestones (2026-11-08)
 
-- [x] Draft PR #28: remove FFmpeg `-shortest`, validate video coverage against every audio stream, and bound sidecar subtitles to the primary audio timeline. GitHub Actions run #42443776310 passed 179 unit tests and all 24 validation stages; independent review remains pending.
+- [x] Draft PR #28: remove FFmpeg `-shortest`, validate video coverage against every audio stream, and bound sidecar subtitles to the primary audio timeline. GitHub Actions run #42444019667 passed 179 unit tests and all local validation checks (23 numbered stages plus the final pass marker); independent review remains pending.
 
 - [x] PR #7 merged: deterministic frame-based MP4 renderer, CLI, bounded resource limits, and CI media smoke test. Merge commit: `ca94f5a20980f0731e8594a10b67f605b10b603f`.
 - [x] PR #24 merged: Natural Earth GeoJSON overlay supported directly in MP4 frames; CI renders a 1280×720 map, muxes test audio/SRT, and uploads review artifacts. Merge commit: `1812a53d2517aa246b718ec6b7cfe36b93a190ce`.
