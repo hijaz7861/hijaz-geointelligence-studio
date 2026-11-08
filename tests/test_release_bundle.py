@@ -44,6 +44,19 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
   self.assertFalse(bundle['subtitle_validation']['timeline_within_audio'])
   self.assertTrue(any('Subtitle timeline exceeds primary audio stream by 1000 ms.' in item for item in bundle['release_blockers']))
+
+ def test_all_self_reported_approval_flags_still_never_authorize_release(self):
+  approved_project={**PROJECT,"approval":{"script_reviewed":True,"translation_reviewed":True,"media_rights_reviewed":True,"final_video_reviewed":True,"approved_by":"Fixture reviewer"}}
+  self.project.write_text(json.dumps(approved_project),encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  self.assertTrue(bundle['human_approval_record']['script_reviewed'])
+  self.assertTrue(bundle['human_approval_record']['translation_reviewed'])
+  self.assertTrue(bundle['human_approval_record']['media_rights_reviewed'])
+  self.assertTrue(bundle['human_approval_record']['final_video_reviewed'])
+  self.assertFalse(bundle['publish_ready'])
+  self.assertEqual(bundle['release_status'],'draft_blocked')
+  self.assertTrue(any('never grants permission to publish or upload' in item for item in bundle['release_blockers']))
+  self.assertTrue(any('not authenticated by this tool' in item for item in bundle['limitations']))
  def test_missing_render_subtitle_and_metadata_are_blockers(self):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertTrue(any('rendered video is missing' in item.lower() for item in bundle['release_blockers']))
