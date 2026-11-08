@@ -24,8 +24,14 @@ class SourceLedgerError(ValueError):
 
 
 def _canonical_url(url: str) -> str:
+    """Build a conservative duplicate key without conflating distinct path resources."""
     parsed = urlparse(url)
-    return urlunparse((parsed.scheme.lower(), parsed.netloc.lower(), parsed.path.rstrip("/"), parsed.params, parsed.query, ""))
+    # Empty and slash-only root paths identify the same HTTP resource. Preserve
+    # trailing slashes on non-root paths because /report and /report/ may differ.
+    path = parsed.path or "/"
+    return urlunparse(
+        (parsed.scheme.lower(), parsed.netloc.lower(), path, parsed.params, parsed.query, "")
+    )
 
 
 def validate_source(source: dict[str, Any]) -> dict[str, str]:

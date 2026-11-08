@@ -57,7 +57,7 @@ printf '\n[4/24] Source CLI add + duplicate rejection smoke test\n'
   --ledger "$TMP_DIR/sources.json" > "$TMP_DIR/add.json"
 if "$PYTHON" scripts/add_source.py \
   --title 'Validation fixture duplicate' \
-  --url 'HTTPS://EXAMPLE.ORG/validation-fixture/' \
+  --url 'HTTPS://EXAMPLE.ORG/validation-fixture#section' \
   --published-at '2026-10-20' \
   --source-type independent_reporting \
   --claim-status independent_reporting \
