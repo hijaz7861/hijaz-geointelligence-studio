@@ -45,12 +45,26 @@ class SourceLedgerTests(unittest.TestCase):
             self.assertEqual(load_sources(path), [VALID])
             self.assertEqual(json.loads(path.read_text(encoding="utf-8")), [VALID])
 
-    def test_duplicate_url_is_rejected_case_and_trailing_slash_insensitive(self):
+    def test_duplicate_url_normalizes_scheme_host_case_and_fragment(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "sources.json"
             add_source(VALID, path)
             with self.assertRaisesRegex(SourceLedgerError, "already exists"):
-                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG/report/"}, path)
+                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG/report#section"}, path)
+
+    def test_non_root_trailing_slash_is_preserved_as_resource_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sources.json"
+            add_source(VALID, path)
+            add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG/report/"}, path)
+            self.assertEqual(len(load_sources(path)), 2)
+
+    def test_empty_root_path_and_slash_root_are_equivalent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sources.json"
+            add_source({**VALID, "url": "https://example.org"}, path)
+            with self.assertRaisesRegex(SourceLedgerError, "already exists"):
+                add_source({**VALID, "url": "HTTPS://EXAMPLE.ORG/"}, path)
 
     def test_missing_fields_are_rejected(self):
         with self.assertRaisesRegex(SourceLedgerError, "Missing required fields"):
