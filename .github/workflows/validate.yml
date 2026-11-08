@@ -1,6 +1,17 @@
 name: Repository validation
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "tests/**"
+      - "scripts/**"
+      - "data/**"
+      - "docs/**"
+      - ".github/workflows/validate.yml"
+      - "README.md"
   pull_request:
     paths:
       - "app/**"
