@@ -118,5 +118,32 @@ class CinematicMP4Tests(unittest.TestCase):
         self.assertEqual(self.output.read_bytes(), b"original")
 
 
+    @patch.dict(sys.modules, {"cairosvg": types.SimpleNamespace(svg2png=lambda **kw: Path(kw["write_to"]).write_bytes(b"png"))})
+    @patch("app.video.cinematic_mp4.shutil.which", return_value="/usr/bin/ffmpeg")
+    @patch("app.video.cinematic_mp4.subprocess.run")
+    @patch("app.video.cinematic_mp4._frame_svg", return_value="<svg/>")
+    @patch("app.video.cinematic_mp4.render_animated_svg")
+    def test_forwards_geojson_and_rights_metadata_into_every_mp4_frame(self, render_svg, _frame, run, _which):
+        def write_template(scene, path, **kwargs):
+            Path(path).write_text("<svg/>", encoding="utf-8")
+        render_svg.side_effect = write_template
+        def fake_ffmpeg(command, **kwargs):
+            Path(command[-1]).write_bytes(b"synthetic mp4")
+            return Mock(returncode=0, stderr="")
+        run.side_effect = fake_ffmpeg
+        geojson = self.root / "natural-earth.geojson"
+        geojson.write_text("{}", encoding="utf-8")
+        render_cinematic_mp4(
+            fixture(), self.output, fps=1, geojson_path=geojson,
+            basemap_attribution="Natural Earth",
+            basemap_license="Public domain; CC0 conversion",
+            basemap_source_url="https://example.org/natural-earth",
+        )
+        self.assertEqual(render_svg.call_args.kwargs["geojson_path"], geojson)
+        self.assertEqual(render_svg.call_args.kwargs["basemap_attribution"], "Natural Earth")
+        self.assertEqual(render_svg.call_args.kwargs["basemap_license"], "Public domain; CC0 conversion")
+        self.assertEqual(render_svg.call_args.kwargs["basemap_source_url"], "https://example.org/natural-earth")
+
+
 if __name__ == "__main__":
     unittest.main()
