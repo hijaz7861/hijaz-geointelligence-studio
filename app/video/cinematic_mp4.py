@@ -70,7 +70,7 @@ def _frame_svg(template, scene, seconds):
     return result
 
 
-def render_cinematic_mp4(scene, output_path, *, fps=5, overwrite=False, timeout_seconds=300):
+def render_cinematic_mp4(scene, output_path, *, fps=5, overwrite=False, timeout_seconds=300, geojson_path=None, basemap_attribution=None, basemap_license=None, basemap_source_url=None):
     """Render a reviewed scene to MP4; defaults are bounded for low-cost preview use."""
     try:
         validate_scene(scene)
@@ -104,7 +104,12 @@ def render_cinematic_mp4(scene, output_path, *, fps=5, overwrite=False, timeout_
     temp_output = temp_root / "render.mp4"
     try:
         template_path = temp_root / "template.svg"
-        render_animated_svg(scene, template_path)
+        render_animated_svg(
+            scene, template_path, geojson_path=geojson_path,
+            basemap_attribution=basemap_attribution,
+            basemap_license=basemap_license,
+            basemap_source_url=basemap_source_url,
+        )
         template = template_path.read_text(encoding="utf-8")
         for index in range(frame_count):
             seconds = index / fps
