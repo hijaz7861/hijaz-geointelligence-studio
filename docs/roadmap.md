@@ -33,14 +33,16 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Add optional offline eSpeak WAV narration for installed language voices with timeout, output-safety, and no-silent-fallback checks.
 - [x] Add a repeatable synthetic integration check that assembles generated narration, video, and SRT into one MP4 and verifies all three streams.
 - [ ] Add high-quality human/cloud narration provider for languages/voices not installed locally (Urdu is not available in the current validation environment).
-- [x] Add first-stage schematic animated SVG route preview with scene-plan validation (not a licensed basemap or MP4 output).
-- [ ] Build original graphics, licensed geographic maps, timelines, captions, and narration tracks.
+- [x] Add a deterministic frame-based MP4 renderer with optional Natural Earth GeoJSON overlay, visible attribution/license metadata, and CI-rendered review artifacts.
+- [x] Bundle a generalized Natural Earth public-domain/CC0 world-country map layer with source notice and attribution.
+- [x] Add a reproducible source-linked English documentary sample with Urdu translation, bilingual subtitles, offline English narration, Natural Earth MP4 render, and non-publishing release evidence bundle.
+- [ ] Add original camera moves, richer vehicle/ship sprites, advanced timeline graphics, and high-quality Urdu/Russian/Chinese narration.
 - [x] Add an optional local FFmpeg adapter to mux existing video, narration, and selectable SRT subtitle streams; test command safety and failure handling.
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
 - [x] Validate rendered output for video/audio/subtitle streams, positive duration, and minimum configured resolution using ffprobe.
 - [ ] Verify subtitle-to-audio synchronization, audio quality/levels, and render errors.
-- [ ] Add original graphics/timeline generation and a complete sample documentary render from a cited script.
+- [x] Render a cited-script sample documentary end-to-end in CI; technical validation passes but the sample remains an unapproved editorial draft.
 
 ## Phase 4 — Release safety and YouTube preparation
 - [x] Add human-approval flags for script, translation, media rights, and final video review.
@@ -61,12 +63,10 @@ This repository is an evolving MVP, not a completed production system. A phase i
 The project is not production-complete until a sample documentary can be traced end-to-end from sources to claims to a cited multilingual script to rights-cleared assets to a rendered video, with a human approval record and a reproducible test report. A passing unit-test suite alone is not completion.
 
 
-## Current draft branch — cinematic MP4 rendering
+## Verified implementation milestones (2026-11-08)
 
-- [x] Add a bounded frame-based renderer prototype that positions route markers explicitly per frame and encodes visuals-only MP4 through FFmpeg.
-- [x] Add CLI, interpolation/safety unit tests, a CairoSVG media dependency pin, and a CI smoke-render stage.
-- [ ] Confirm the new branch passes the full GitHub Actions workflow; do not mark this stage verified until logs are green.
-- [ ] Inspect the rendered synthetic preview visually and verify its dimensions, duration, frame count, and route movement.
-- [ ] Render and inspect a genuinely licensed geographic sample; user-supplied attribution/source metadata is not proof of license validity.
-- [ ] Add a source-grounded end-to-end documentary sample with reviewed narration/subtitles and synchronization checks.
-- [ ] Validate the draft local GeoJSON polygon-overlay implementation in CI and with a reviewed, appropriately licensed dataset before marking map rendering complete.
+- [x] PR #7 merged: deterministic frame-based MP4 renderer, CLI, bounded resource limits, and CI media smoke test. Merge commit: `ca94f5a20980f0731e8594a10b67f605b10b603f`.
+- [x] PR #24 merged: Natural Earth GeoJSON overlay supported directly in MP4 frames; CI renders a 1280×720 map, muxes test audio/SRT, and uploads review artifacts. Merge commit: `1812a53d2517aa246b718ec6b7cfe36b93a190ce`.
+- [x] PR #25 draft branch: source-grounded English/Urdu sample documentary; CI generated a 35-second H.264 MP4 with English eSpeak narration and bilingual subtitles, validated all streams, and created a blocked release evidence bundle. **159 unit tests and all 23 validation stages passed** on the current PR head.
+- [ ] Human editor must review the actual sample script, Urdu translation, English synthetic voice, map treatment, rights evidence, and final MP4 before approving publication.
+- [ ] Production Urdu narration provider, robust audio/subtitle synchronization metrics, advanced camera moves/graphics, richer timeline, secure authenticated editorial dashboard, and YouTube upload integration remain unfinished.
