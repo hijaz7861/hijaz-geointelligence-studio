@@ -1,0 +1,29 @@
+{
+  "scene_id": "world-map-literacy-001",
+  "title": "Why world maps show borders differently",
+  "mode": "educational",
+  "duration_seconds": 35,
+  "map": {
+    "west": -180,
+    "east": 180,
+    "south": -90,
+    "north": 90
+  },
+  "entities": [
+    {
+      "id": "world-boundaries",
+      "label": "Generalized country boundaries"
+    }
+  ],
+  "routes": [],
+  "events": [
+    {
+      "t": 8,
+      "lon": 15,
+      "lat": 28,
+      "label": "Boundary representation choice",
+      "illustrative": true
+    }
+  ],
+  "disclaimer": "Educational map-literacy sample. Natural Earth 1:110m generalized boundaries; not a legal boundary determination or navigation map. The event marker is illustrative."
+}
