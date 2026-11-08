@@ -52,7 +52,8 @@ Create a repeatable, local-first visual-production component for historical and 
 - [x] Initial Python scene validator and deterministic SVG animation CLI.
 - [x] Illustrative sample scene and unit tests for bounds, references, timestamps, and overwrite protection.
 - [x] CI execution verified on 2026-10-28: 126 unit tests and all 20 repository validation stages passed in GitHub Actions.
-- [ ] Licensed geographic basemap, camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and cinematic-map MP4 renderer integration remain unimplemented.
+- [x] Optional local GeoJSON basemap overlay and deterministic frame-based cinematic MP4 renderer are implemented; the MP4 CLI now accepts GeoJSON plus visible attribution/license/source metadata.
+- [ ] Camera moves, richer aircraft/ship sprites, reusable effects library, narration/subtitle synchronization, and a fully source-grounded documentary remain unfinished.
 - [ ] A source-grounded, human-reviewed geographic sample still needs to be rendered and inspected.
 
 The current renderer is an initial schematic graticule preview, not a complete cinematic map product. A passing CI run verifies the scripted checks, but does not make the cinematic map feature production-ready.
@@ -129,3 +130,21 @@ python3 scripts/render_cinematic_map.py --scene data/projects/sample_cinematic_s
 ```
 
 The data is checked into the repository and is not downloaded at run time. Attribution is rendered into the SVG. Verify current source terms before external redistribution; the bundled map is generalized and illustrative, not an authoritative GIS product.
+
+
+## Natural Earth GeoJSON in MP4 output
+
+The frame-based MP4 renderer accepts the same local GeoJSON overlay and rights metadata as the SVG renderer. The CI sample now renders the pinned Natural Earth 1:110m countries layer into every frame before FFmpeg encoding.
+
+```bash
+python3 scripts/render_cinematic_mp4.py \
+  --scene data/projects/sample_cinematic_scene.json \
+  --output /tmp/natural-earth-cinematic.mp4 \
+  --fps 5 \
+  --geojson data/assets/natural_earth_110m_admin_0_countries.geojson \
+  --basemap-attribution "Made with Natural Earth; GeoJSON conversion by Martyn Afford" \
+  --basemap-license "Public domain (Natural Earth); CC0-1.0 (GeoJSON conversion)" \
+  --basemap-source-url "https://github.com/martynafford/natural-earth-geojson/blob/0b9a6ceb0a7032713abd9460ac1e995a9c60cd1e/110m/cultural/ne_110m_admin_0_countries.json"
+```
+
+The CI artifact is a synthetic, illustrative route over a generalized Natural Earth basemap. It demonstrates technical integration only; it is not a factual event reconstruction, a legally reviewed production map, or an approved documentary.
