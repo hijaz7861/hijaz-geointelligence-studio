@@ -1,0 +1,2 @@
+# Optional online neural TTS; sends narration text to Microsoft Edge TTS.
+edge-tts==7.3.1
