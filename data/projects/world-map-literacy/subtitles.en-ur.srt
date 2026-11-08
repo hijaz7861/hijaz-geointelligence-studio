@@ -1,0 +1,36 @@
+1
+00:00:00,000 --> 00:00:05,000
+A political map is not a neutral
+window.
+سیاسی نقشہ حقیقت کی غیر جانب دار
+تصویر نہیں ہوتا۔
+
+2
+00:00:05,000 --> 00:00:10,000
+Every map is built for a purpose,
+scale, and boundary policy.
+ہر نقشہ ایک مقصد، پیمانے اور
+سرحدی اصول کے تحت تیار ہوتا ہے۔
+
+3
+00:00:10,000 --> 00:00:18,000
+Natural Earth shows de facto
+boundaries by default: who controls
+territory, rather than de jure claims.
+نیچرل ارتھ بنیادی طور پر عملی کنٹرول
+کے مطابق سرحدیں دکھاتا ہے، نہ کہ
+صرف قانونی دعووں کے مطابق۔
+
+4
+00:00:18,000 --> 00:00:27,000
+That is a mapping convention, not
+a final legal judgment.
+یہ نقشہ سازی کا اصول ہے،
+حتمی قانونی فیصلہ نہیں۔
+
+5
+00:00:27,000 --> 00:00:35,000
+Check the dataset, scale, date, and
+disputed-boundary policy.
+ڈیٹا سیٹ، پیمانہ، تاریخ اور
+متنازع سرحدوں کی پالیسی دیکھیں۔

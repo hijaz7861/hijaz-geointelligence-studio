@@ -1,0 +1,10 @@
+[
+  {
+    "claim": "Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims.",
+    "status": "official_claim",
+    "source_urls": [
+      "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/"
+    ],
+    "notes": "This records Natural Earth's stated mapping convention; it is not an independent legal determination of sovereignty or boundary status."
+  }
+]

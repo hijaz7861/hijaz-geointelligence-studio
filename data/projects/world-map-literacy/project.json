@@ -1,0 +1,29 @@
+{
+  "project_id": "world-map-literacy-en-ur-sample",
+  "title": "Why world maps show borders differently",
+  "language": "en",
+  "target_duration_seconds": 35,
+  "script": "# Why world maps show borders differently\n\n[EDITORIAL] A political map is not a neutral window. Every map is built for a purpose, at a particular scale, with a particular boundary policy.\n\n[[claim:Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims.]] Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims.\n\n[EDITORIAL] That is a mapping convention, not a final legal judgment. Before interpreting a border, check the dataset, its scale, its date, and how it treats disputed areas.\n\n[EDITORIAL] Source: https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/",
+  "claim_ids": [
+    "Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims."
+  ],
+  "media_assets": [
+    {
+      "asset_id": "natural-earth-admin0-map",
+      "origin_url": "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/",
+      "rights_status": "public_domain_verified",
+      "creator": "Natural Earth contributors; GeoJSON conversion by Martyn Afford",
+      "attribution": "Made with Natural Earth; GeoJSON conversion by Martyn Afford.",
+      "usage_scope": "Educational world-map documentary preview; generalized 1:110m country-boundary layer.",
+      "rights_evidence": "Natural Earth's official Terms of Use state that its website's raster and vector map data are public domain and may be used for educational and commercial purposes: https://www.naturalearthdata.com/about/terms-of-use/. The pinned GeoJSON conversion repository states its conversion is CC0. Confirm current terms before redistribution.",
+      "notes": "The layer represents de facto boundaries by default and is generalized; it is not a legal determination, navigation data, or proof of the accuracy of any individual boundary."
+    }
+  ],
+  "approval": {
+    "script_reviewed": false,
+    "translation_reviewed": false,
+    "media_rights_reviewed": false,
+    "final_video_reviewed": false,
+    "approved_by": ""
+  }
+}
