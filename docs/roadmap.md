@@ -42,7 +42,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
 - [x] Validate rendered output for video/audio/subtitle streams, positive duration, and minimum configured resolution using ffprobe.
-- [ ] Verify subtitle-to-audio synchronization, audio quality/levels, and render errors.
+- [x] Require video stream coverage of every audio stream and bound sidecar SRT cues to the primary audio interval and container duration (250 ms tolerance); these are stream-time checks only.
+- [ ] Verify word-level subtitle-to-speech synchronization, audio quality/levels, and render errors.
 - [x] Render a cited-script sample documentary end-to-end in CI; technical validation passes but the sample remains an unapproved editorial draft.
 
 ## Phase 4 — Release safety and YouTube preparation
@@ -65,6 +66,8 @@ The project is not production-complete until a sample documentary can be traced 
 
 
 ## Verified implementation milestones (2026-11-08)
+
+- [x] Draft PR #28: remove FFmpeg `-shortest`, validate video coverage against every audio stream, and bound sidecar subtitles to the primary audio timeline. GitHub Actions run #42444019667 passed 179 unit tests and all local validation checks (23 numbered stages plus the final pass marker); independent review remains pending.
 
 - [x] PR #7 merged: deterministic frame-based MP4 renderer, CLI, bounded resource limits, and CI media smoke test. Merge commit: `ca94f5a20980f0731e8594a10b67f605b10b603f`.
 - [x] PR #24 merged: Natural Earth GeoJSON overlay supported directly in MP4 frames; CI renders a 1280×720 map, muxes test audio/SRT, and uploads review artifacts. Merge commit: `1812a53d2517aa246b718ec6b7cfe36b93a190ce`.

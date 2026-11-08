@@ -67,7 +67,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     if render_path is None or not Path(render_path).expanduser().is_file():
         blockers.append("Final rendered video is missing.")
     else:
-        try: render_report=inspect_rendered_video(render_path,require_audio=True,require_subtitles=True,min_width=min_width,min_height=min_height)
+        try: render_report=inspect_rendered_video(render_path,require_audio=True,require_subtitles=True,require_video_cover_audio=True,min_width=min_width,min_height=min_height)
         except (RenderValidationError,OSError) as exc: blockers.append(f"Rendered video technical validation failed: {exc}")
     subtitle_report=None
     if subtitle_path is None or not Path(subtitle_path).expanduser().is_file():
@@ -80,7 +80,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
                 "validation": "PASS",
                 "cue_count": len(cues),
                 "duration_ms": subtitle_duration_ms,
-                "note": "Structure/timing only; linguistic accuracy and audio synchronization need human review.",
+                "note": "Structure and stream-bound timing only; word-level synchronization and linguistic accuracy need human review.",
             }
             if render_report is not None:
                 duration_seconds = render_report.get("duration_seconds") if isinstance(render_report, dict) else None
@@ -94,6 +94,37 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
                     if not timeline_within_render:
                         overrun_ms = subtitle_duration_ms - render_duration_ms
                         blockers.append(f"Subtitle timeline exceeds rendered video duration by {overrun_ms} ms.")
+                    audio_start_seconds = render_report.get("audio_start_time_seconds")
+                    audio_duration_seconds = render_report.get("audio_duration_seconds")
+                    valid_audio_timing = (
+                        not isinstance(audio_start_seconds, bool)
+                        and isinstance(audio_start_seconds, (int, float))
+                        and math.isfinite(float(audio_start_seconds))
+                        and not isinstance(audio_duration_seconds, bool)
+                        and isinstance(audio_duration_seconds, (int, float))
+                        and math.isfinite(float(audio_duration_seconds))
+                        and float(audio_duration_seconds) > 0
+                    )
+                    if not valid_audio_timing:
+                        subtitle_report["timeline_within_audio"] = False
+                        blockers.append("Primary audio stream timing is unavailable for subtitle timeline comparison.")
+                    else:
+                        audio_start_ms = round(float(audio_start_seconds) * 1000)
+                        audio_end_ms = audio_start_ms + round(float(audio_duration_seconds) * 1000)
+                        first_cue_start_ms = cues[0].start_ms
+                        timeline_within_audio = (
+                            first_cue_start_ms >= audio_start_ms - 250
+                            and subtitle_duration_ms <= audio_end_ms + 250
+                        )
+                        subtitle_report["audio_start_ms"] = audio_start_ms
+                        subtitle_report["audio_end_ms"] = audio_end_ms
+                        subtitle_report["timeline_within_audio"] = timeline_within_audio
+                        if first_cue_start_ms < audio_start_ms - 250:
+                            early_ms = audio_start_ms - first_cue_start_ms
+                            blockers.append(f"Subtitle timeline begins before primary audio stream by {early_ms} ms.")
+                        if subtitle_duration_ms > audio_end_ms + 250:
+                            overrun_ms = subtitle_duration_ms - audio_end_ms
+                            blockers.append(f"Subtitle timeline exceeds primary audio stream by {overrun_ms} ms.")
         except (SubtitleValidationError,OSError) as exc: blockers.append(f"Subtitle validation failed: {exc}")
     if metadata_path is None or not Path(metadata_path).expanduser().is_file():
         blockers.append("YouTube metadata draft is missing.")
@@ -118,7 +149,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
       "render_validation":render_report,"subtitle_validation":subtitle_report,
       "human_approval_record":human_approval,
       "counts":{"source_records":len(sources),"claim_records":len(claims),"linked_claims":len(claim_evidence),"media_assets":len(media_evidence)},
-      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","Human approval is recorded from project metadata and is not authenticated by this tool.","This bundle does not publish, upload, or authorize public release."]
+      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Stream-bound render and SRT checks do not assess word-level narration/caption synchronization, narration quality, or linguistic accuracy.","Human approval is recorded from project metadata and is not authenticated by this tool.","This bundle does not publish, upload, or authorize public release."]
     }
 def write_release_bundle(bundle: dict[str, Any], output_path: str | Path, *, overwrite: bool = False) -> Path:
     output=Path(output_path).expanduser().resolve()
