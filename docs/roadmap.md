@@ -42,7 +42,8 @@ This repository is an evolving MVP, not a completed production system. A phase i
 - [x] Run a real synthetic MP4 smoke render and verify video/audio/subtitle streams in the assistant environment.
 - [x] Validate SRT cue numbering, timestamp syntax/ranges, cue ordering, overlaps, empty text, and configurable line length.
 - [x] Validate rendered output for video/audio/subtitle streams, positive duration, and minimum configured resolution using ffprobe.
-- [x] Require video stream coverage of every audio stream and bound sidecar SRT cues to the primary audio interval and container duration (250 ms tolerance); these are stream-time checks only.\n- [ ] Verify word-level subtitle-to-speech synchronization, audio quality/levels, and render errors.
+- [x] Require video stream coverage of every audio stream and bound sidecar SRT cues to the primary audio interval and container duration (250 ms tolerance); these are stream-time checks only.
+- [ ] Verify word-level subtitle-to-speech synchronization, audio quality/levels, and render errors.
 - [x] Render a cited-script sample documentary end-to-end in CI; technical validation passes but the sample remains an unapproved editorial draft.
 
 ## Phase 4 — Release safety and YouTube preparation
@@ -64,7 +65,9 @@ This repository is an evolving MVP, not a completed production system. A phase i
 The project is not production-complete until a sample documentary can be traced end-to-end from sources to claims to a cited multilingual script to rights-cleared assets to a rendered video, with a human approval record and a reproducible test report. A passing unit-test suite alone is not completion.
 
 
-## Verified implementation milestones (2026-11-08)\n\n- [ ] Draft PR: remove FFmpeg `-shortest`, validate video coverage against every audio stream, and bound sidecar subtitles to the primary audio timeline; pending CI and independent review.
+## Verified implementation milestones (2026-11-08)
+
+- [ ] Draft PR: remove FFmpeg `-shortest`, validate video coverage against every audio stream, and bound sidecar subtitles to the primary audio timeline; pending CI and independent review.
 
 - [x] PR #7 merged: deterministic frame-based MP4 renderer, CLI, bounded resource limits, and CI media smoke test. Merge commit: `ca94f5a20980f0731e8594a10b67f605b10b603f`.
 - [x] PR #24 merged: Natural Earth GeoJSON overlay supported directly in MP4 frames; CI renders a 1280×720 map, muxes test audio/SRT, and uploads review artifacts. Merge commit: `1812a53d2517aa246b718ec6b7cfe36b93a190ce`.
