@@ -25,7 +25,7 @@ class EdgeNarrationTests(unittest.TestCase):
 
     def test_rejects_text_above_provider_request_limit(self):
         with self.assertRaisesRegex(EdgeNarrationError, "3500-byte"):
-            generate_edge_narration("ا" * 1200, "ur-PK-AsadNeural", self.output)
+            generate_edge_narration("ا" * 1800, "ur-PK-AsadNeural", self.output)
 
     def test_rejects_invalid_rate(self):
         with self.assertRaisesRegex(EdgeNarrationError, "signed percentage"):
