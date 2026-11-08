@@ -39,7 +39,7 @@ class ReleaseBundleTests(unittest.TestCase):
 
  @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':5.0,'audio_start_time_seconds':0.0,'audio_duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
  def test_subtitle_past_audio_is_blocked_even_when_inside_container(self,probe):
-  self.srt.write_text('1\\n00:00:00,000 --> 00:00:02,000\\nCaption extends past audio.\\n',encoding='utf-8')
+  self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past audio.\n',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
   self.assertFalse(bundle['subtitle_validation']['timeline_within_audio'])
