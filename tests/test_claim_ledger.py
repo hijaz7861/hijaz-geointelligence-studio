@@ -21,6 +21,28 @@ class ClaimLedgerTests(unittest.TestCase):
  def test_rejects_duplicate_claim_case_insensitively(self):
   add_claim(CLAIM,self.claims,self.sources)
   with self.assertRaisesRegex(ClaimLedgerError,"Duplicate claim text"): add_claim({**CLAIM,"claim":CLAIM["claim"].upper()},self.claims,self.sources)
+ def test_accepts_canonical_equivalent_source_url(self):
+  variant="HTTPS://EXAMPLE.ORG/report#section"
+  claim={**CLAIM,"source_urls":[variant]}
+  add_claim(claim,self.claims,self.sources)
+  self.assertEqual(load_claims(self.claims,self.sources),[claim])
+
+ def test_rejects_distinct_non_root_trailing_slash_source(self):
+  with self.assertRaisesRegex(ClaimLedgerError,"absent from the source ledger"):
+   add_claim({**CLAIM,"source_urls":["https://example.org/report/"]},self.claims,self.sources)
+
+ def test_rejects_canonical_duplicate_urls_in_claim(self):
+  variant="HTTPS://EXAMPLE.ORG/report#section"
+  with self.assertRaisesRegex(ClaimLedgerError,"Duplicate source URL"):
+   validate_claim({**CLAIM,"source_urls":[SOURCE["url"],variant]})
+
+ def test_accepts_root_path_equivalence_for_claim_source(self):
+  root_source={**SOURCE,"url":"https://example.org"}
+  self.sources.write_text(json.dumps([root_source]),encoding="utf-8")
+  variant_claim={**CLAIM,"source_urls":["HTTPS://EXAMPLE.ORG/"]}
+  add_claim(variant_claim,self.claims,self.sources)
+  self.assertEqual(load_claims(self.claims,self.sources),[variant_claim])
+
  def test_rejects_duplicate_urls_in_claim(self):
   with self.assertRaisesRegex(ClaimLedgerError,"Duplicate source URL"): validate_claim({**CLAIM,"source_urls":[SOURCE["url"],SOURCE["url"]]})
  def test_reports_corrupt_claim_json(self):
