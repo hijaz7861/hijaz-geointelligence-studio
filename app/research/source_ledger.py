@@ -23,8 +23,8 @@ class SourceLedgerError(ValueError):
     """Raised when source metadata is incomplete or invalid."""
 
 
-def _canonical_url(url: str) -> str:
-    """Build a conservative duplicate key without conflating distinct path resources."""
+def canonical_source_url(url: str) -> str:
+    """Build a conservative URL identity key; this does not fetch or verify a source."""
     parsed = urlparse(url)
     # Empty and slash-only root paths identify the same HTTP resource. Preserve
     # trailing slashes on non-root paths because /report and /report/ may differ.
@@ -32,6 +32,11 @@ def _canonical_url(url: str) -> str:
     return urlunparse(
         (parsed.scheme.lower(), parsed.netloc.lower(), path, parsed.params, parsed.query, "")
     )
+
+
+def _canonical_url(url: str) -> str:
+    """Backward-compatible internal alias for canonical_source_url."""
+    return canonical_source_url(url)
 
 
 def validate_source(source: dict[str, Any]) -> dict[str, str]:
@@ -78,8 +83,8 @@ def load_sources(path: str | Path = DEFAULT_LEDGER) -> list[dict[str, str]]:
 def add_source(source: dict[str, Any], path: str | Path = DEFAULT_LEDGER) -> dict[str, str]:
     normalized = validate_source(source)
     existing = load_sources(path)
-    canonical = _canonical_url(normalized["url"])
-    if any(_canonical_url(item["url"]) == canonical for item in existing):
+    canonical = canonical_source_url(normalized["url"])
+    if any(canonical_source_url(item["url"]) == canonical for item in existing):
         raise SourceLedgerError("A source with this URL already exists.")
     ledger_path = Path(path)
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
