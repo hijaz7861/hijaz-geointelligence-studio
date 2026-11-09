@@ -30,6 +30,16 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
   probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,min_width=1280,min_height=720)
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
+ def test_all_true_project_approval_flags_are_not_authenticated(self):
+  project={**PROJECT,"approval":{"script_reviewed":True,"translation_reviewed":True,"media_rights_reviewed":True,"final_video_reviewed":True,"approved_by":"Claimed reviewer"}}
+  self.project.write_text(json.dumps(project),encoding='utf-8')
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  self.assertTrue(all(bundle["human_approval_record"][key] is True for key in ("script_reviewed","translation_reviewed","media_rights_reviewed","final_video_reviewed")))
+  self.assertEqual(bundle["human_approval_authentication"]["status"],"NOT_AUTHENTICATED")
+  self.assertIs(bundle["human_approval_authentication"]["authenticated"],False)
+  self.assertEqual(bundle["human_approval_authentication"]["evidence_source"],"project_metadata_only")
+  self.assertTrue(any("Human approval metadata is self-reported" in item for item in bundle["release_blockers"]))
+
  @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
  def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):
   self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past render.\n',encoding='utf-8')

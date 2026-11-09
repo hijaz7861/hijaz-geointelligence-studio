@@ -108,6 +108,22 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     if not project.get("media_assets"): blockers.append("No media assets are listed in the project manifest.")
     approval=project.get("approval",{})
     human_approval={key:approval.get(key) for key in ("script_reviewed","translation_reviewed","media_rights_reviewed","final_video_reviewed","approved_by")}
+    # Project JSON is editable metadata. Never treat booleans or a reviewer name
+    # in that file as an authenticated human decision.
+    approval_authentication={
+        "status":"NOT_AUTHENTICATED",
+        "authenticated":False,
+        "evidence_source":"project_metadata_only",
+        "identity_assurance":"self_asserted",
+        "note":"Project approval flags and approved_by are recorded for context only; they are not signed receipts or independently authenticated reviewer identity.",
+        "required_controls":[
+            "Verify project-bound approval receipts against a protected signing key.",
+            "Authenticate each reviewer through a trusted identity provider or independently managed reviewer credential.",
+            "Record separate decisions for script, translation, media rights, and the exact final MP4 hash.",
+            "Require independent human review before any public release."
+        ]
+    }
+    blockers.append("Human approval metadata is self-reported and is not authenticated.")
     blockers.append("This evidence bundle is a review artifact only; it never grants permission to publish or upload.")
     return {
       "schema_version":"1.0","project_id":project["project_id"],"title":project["title"],"language":project["language"],
@@ -117,6 +133,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
       "claim_evidence":claim_evidence,"media_rights_evidence":media_evidence,
       "render_validation":render_report,"subtitle_validation":subtitle_report,
       "human_approval_record":human_approval,
+      "human_approval_authentication":approval_authentication,
       "counts":{"source_records":len(sources),"claim_records":len(claims),"linked_claims":len(claim_evidence),"media_assets":len(media_evidence)},
       "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","Human approval is recorded from project metadata and is not authenticated by this tool.","This bundle does not publish, upload, or authorize public release."]
     }
