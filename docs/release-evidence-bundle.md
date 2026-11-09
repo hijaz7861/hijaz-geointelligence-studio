@@ -12,7 +12,7 @@ Create a JSON evidence report for editorial review:
       --min-width 1280 --min-height 720 \
       --output artifacts/reports/release-evidence.json
 
-The tool records SHA-256 hashes and sizes for provided input files, maps project claims to source metadata, captures media-rights fields, checks final render streams with ffprobe (video, audio, and an embedded subtitle stream are required), validates the sidecar SRT structure, and blocks subtitle cues that extend more than 250 ms beyond the rendered container duration. It includes the approval fields recorded in the project JSON.
+The tool records SHA-256 hashes and sizes for provided input files, maps project claims to source metadata, captures media-rights fields, checks final render streams with ffprobe (video, audio, and an embedded subtitle stream are required), validates the sidecar SRT structure, and blocks subtitle cues that extend more than 250 ms beyond the rendered container duration. It includes the approval fields recorded in the project JSON and a separate `human_approval_authentication` object. Project flags and `approved_by` are self-reported metadata only; the report explicitly marks authentication as `NOT_AUTHENTICATED` and adds a release blocker even when every flag is true.
 
 Missing render, subtitles, metadata, unclear media rights, unresolved claims, and missing approvals become release blockers. The report always keeps publish_ready set to false: this is an audit artifact, not authorization to publish or upload.
 
@@ -22,5 +22,5 @@ Missing render, subtitles, metadata, unclear media rights, unresolved claims, an
 - Source URLs and claim labels do not prove that sources support the claims.
 - Rights evidence is recorded as supplied text; the tool does not verify licenses or permission.
 - Subtitle structure and a duration-bound check do not prove translation quality or synchronization to the spoken audio.
-- Approval names and flags are copied from project metadata; they are not cryptographically signed or authenticated.
+- Approval names and flags are copied from project metadata; they are not cryptographically signed or authenticated. The report marks this state as `NOT_AUTHENTICATED` and lists the controls needed for trusted review.
 - No YouTube API call or upload is performed.
