@@ -36,6 +36,17 @@ class ReleaseBundleTests(unittest.TestCase):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
   self.assertFalse(bundle['subtitle_validation']['timeline_within_render'])
   self.assertTrue(any('Subtitle timeline exceeds rendered video duration by 1000 ms.' in item for item in bundle['release_blockers']))
+ def test_bundle_resolves_canonical_claim_source_url_and_preserves_both_urls(self):
+  variant="HTTPS://EXAMPLE.ORG/report#section"
+  self.claims.write_text(json.dumps([{**CLAIM,"source_urls":[variant]}]),encoding="utf-8")
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
+  reference=bundle["claim_evidence"][0]["sources"][0]
+  self.assertTrue(reference["in_source_ledger"])
+  self.assertEqual(reference["url"],variant)
+  self.assertEqual(reference["matched_source_url"],SOURCE["url"])
+  self.assertEqual(reference["match_method"],"canonical_url")
+  self.assertFalse(any("Claim source is missing from source ledger" in item for item in bundle["release_blockers"]))
+
  def test_missing_render_subtitle_and_metadata_are_blockers(self):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertTrue(any('rendered video is missing' in item.lower() for item in bundle['release_blockers']))

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 from app.editorial.script_validator import ProjectValidationError, release_blockers, validate_project_file
 from app.research.claim_ledger import DEFAULT_CLAIMS, ClaimLedgerError, load_claims
-from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
+from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, canonical_source_url, load_sources
 from app.video.render_validator import RenderValidationError, inspect_rendered_video
 from app.voice.srt_validator import SubtitleValidationError, validate_srt_file
 class ReleaseBundleError(ValueError):
@@ -33,7 +33,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     blockers.extend(release_blockers(project,claims))
     linked={item["claim"] for item in claims if item.get("claim") in project.get("claim_ids",[])}
     if len(linked)!=len(project.get("claim_ids",[])): blockers.append("One or more project claim references could not be resolved.")
-    source_by_url={item["url"]:item for item in sources}
+    source_by_url={canonical_source_url(item["url"]):item for item in sources}
     claim_by_text={item["claim"]:item for item in claims}
     claim_evidence=[]
     for text in project.get("claim_ids",[]):
@@ -41,8 +41,16 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         if not claim: continue
         refs=[]
         for url in claim.get("source_urls",[]):
-            source=source_by_url.get(url)
-            refs.append({"url":url,"in_source_ledger":source is not None,"title":source.get("title") if source else None,"source_type":source.get("source_type") if source else None,"published_at":source.get("published_at") if source else None})
+            source=source_by_url.get(canonical_source_url(url))
+            refs.append({
+                "url":url,
+                "in_source_ledger":source is not None,
+                "matched_source_url":source.get("url") if source else None,
+                "match_method":("exact_url" if source and source.get("url")==url else "canonical_url") if source else None,
+                "title":source.get("title") if source else None,
+                "source_type":source.get("source_type") if source else None,
+                "published_at":source.get("published_at") if source else None,
+            })
             if source is None: blockers.append(f"Claim source is missing from source ledger: {url}")
         claim_evidence.append({"claim":text,"status":claim.get("status"),"sources":refs,"notes":"Source linkage is metadata evidence, not independent factual verification."})
     media_evidence=[]

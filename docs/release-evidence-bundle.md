@@ -12,7 +12,7 @@ Create a JSON evidence report for editorial review:
       --min-width 1280 --min-height 720 \
       --output artifacts/reports/release-evidence.json
 
-The tool records SHA-256 hashes and sizes for provided input files, maps project claims to source metadata, captures media-rights fields, checks final render streams with ffprobe (video, audio, and an embedded subtitle stream are required), validates the sidecar SRT structure, and blocks subtitle cues that extend more than 250 ms beyond the rendered container duration. It includes the approval fields recorded in the project JSON.
+The tool records SHA-256 hashes and sizes for provided input files, maps project claims to source metadata using conservative canonical URL identity (scheme/host case and fragments normalized, root path normalized, non-root trailing slashes preserved), captures media-rights fields, checks final render streams with ffprobe (video, audio, and an embedded subtitle stream are required), validates the sidecar SRT structure, and blocks subtitle cues that extend more than 250 ms beyond the rendered container duration. It preserves both submitted and matched ledger URLs. URL matching is traceability metadata only, not source retrieval or factual verification. It includes the approval fields recorded in the project JSON.
 
 Missing render, subtitles, metadata, unclear media rights, unresolved claims, and missing approvals become release blockers. The report always keeps publish_ready set to false: this is an audit artifact, not authorization to publish or upload.
 

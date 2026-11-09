@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
+from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, canonical_source_url, load_sources
 
 DEFAULT_CLAIMS = Path(__file__).resolve().parents[2] / "data" / "sources" / "claims.json"
 CLAIM_STATUSES = {"verified_fact", "official_claim", "independent_reporting", "analysis", "unverified"}
@@ -38,14 +38,22 @@ def validate_claim(claim: dict[str, Any], known_urls: set[str] | None = None) ->
     if not isinstance(urls, list) or not urls:
         raise ClaimLedgerError("source_urls must be a non-empty JSON array.")
     clean_urls: list[str] = []
+    seen_canonical_urls: set[str] = set()
+    known_canonical_urls = (
+        {canonical_source_url(url) for url in known_urls}
+        if known_urls is not None
+        else None
+    )
     for url in urls:
         if not isinstance(url, str) or not url.strip() or not re.match(r"^https?://", url.strip(), re.I):
             raise ClaimLedgerError("Each source URL must be an absolute HTTP or HTTPS URL.")
         normalized_url = url.strip()
-        if normalized_url in clean_urls:
+        canonical_url = canonical_source_url(normalized_url)
+        if canonical_url in seen_canonical_urls:
             raise ClaimLedgerError("Duplicate source URL in claim.")
-        if known_urls is not None and normalized_url not in known_urls:
+        if known_canonical_urls is not None and canonical_url not in known_canonical_urls:
             raise ClaimLedgerError(f"Claim references a URL absent from the source ledger: {normalized_url}")
+        seen_canonical_urls.add(canonical_url)
         clean_urls.append(normalized_url)
     return {**text_fields, "source_urls": clean_urls}
 
