@@ -41,8 +41,6 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertEqual(bundle["human_approval_authentication"]["evidence_source"],"project_metadata_only")
   self.assertTrue(any("Human approval metadata is self-reported" in item for item in bundle["release_blockers"]))
 
- @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
-
  def test_approval_receipts_are_required_and_reported(self):
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
   self.assertEqual(bundle["human_approval_record"]["receipt_validation"]["validation"],"NOT_VERIFIED")
@@ -86,6 +84,7 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertEqual(bundle["human_approval_record"]["receipt_validation"]["validation"],"FAIL")
   self.assertTrue(any("Approval receipt verification failed" in item for item in bundle["release_blockers"]))
 
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
  def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):
   self.srt.write_text('1\n00:00:00,000 --> 00:00:02,000\nCaption extends past render.\n',encoding='utf-8')
   bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
