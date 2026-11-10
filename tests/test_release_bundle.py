@@ -8,6 +8,7 @@ from unittest.mock import patch
 from app.publishing.release_bundle import ReleaseBundleError, build_release_bundle, sha256_file, write_release_bundle
 from app.research.source_ledger import add_source
 from app.research.claim_ledger import add_claim
+from app.publishing.approval_receipts import APPROVAL_STAGES, create_approval_key, record_approval
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE={"title":"Synthetic report","url":"https://example.org/report","published_at":"2026-10-20","source_type":"independent_reporting","claim_status":"independent_reporting","notes":"Synthetic fixture only."}
 CLAIM={"claim":"Synthetic documentary claim","status":"independent_reporting","source_urls":[SOURCE["url"]],"notes":"Fixture only."}
@@ -39,6 +40,49 @@ class ReleaseBundleTests(unittest.TestCase):
   self.assertIs(bundle["human_approval_authentication"]["authenticated"],False)
   self.assertEqual(bundle["human_approval_authentication"]["evidence_source"],"project_metadata_only")
   self.assertTrue(any("Human approval metadata is self-reported" in item for item in bundle["release_blockers"]))
+
+ def test_approval_receipts_are_required_and_reported(self):
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims)
+  self.assertEqual(bundle["human_approval_record"]["receipt_validation"]["validation"],"NOT_VERIFIED")
+  self.assertTrue(any("Tamper-evident human approval receipts" in item for item in bundle["release_blockers"]))
+  self.assertEqual(bundle["human_approval_authentication"]["status"],"NOT_AUTHENTICATED")
+
+ @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
+ def test_valid_receipts_prove_integrity_but_not_reviewer_identity(self,probe):
+  project={**PROJECT,"approval":{"script_reviewed":True,"translation_reviewed":True,"media_rights_reviewed":True,"final_video_reviewed":True,"approved_by":"Human reviewer"}}
+  self.project.write_text(json.dumps(project),encoding="utf-8")
+  key=create_approval_key(self.root/"private"/"approval.key")
+  receipts=self.root/"approval-receipts.json"
+  for stage in APPROVAL_STAGES:
+   record_approval(
+    self.project,receipts,key,stage=stage,decision="approved",reviewer="Human reviewer",
+    reason="Reviewed the relevant project materials.",
+    artifact_path=self.video if stage=="final_video_reviewed" else None,
+    reviewed_at="2026-10-30T03:00:00Z"
+   )
+  bundle=build_release_bundle(
+   self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,
+   subtitle_path=self.srt,metadata_path=self.metadata,
+   approval_receipts_path=receipts,approval_key_path=key
+  )
+  self.assertEqual(bundle["human_approval_record"]["receipt_validation"]["validation"],"PASS")
+  self.assertEqual(bundle["human_approval_authentication"]["status"],"NOT_AUTHENTICATED")
+  self.assertIs(bundle["human_approval_authentication"]["authenticated"],False)
+  self.assertEqual(bundle["human_approval_authentication"]["receipt_integrity_validation"],"PASS")
+  self.assertTrue(any("Human approval metadata is self-reported" in item for item in bundle["release_blockers"]))
+  self.assertFalse(bundle["publish_ready"])
+  self.assertFalse(any(item["label"]=="approval_key" for item in bundle["input_files"]))
+
+ def test_invalid_receipts_fail_closed(self):
+  key=create_approval_key(self.root/"private"/"approval.key")
+  receipts=self.root/"approval-receipts.json"
+  receipts.write_text(json.dumps({"schema_version":"1.0","receipts":[]}),encoding="utf-8")
+  bundle=build_release_bundle(
+   self.project,source_path=self.sources,claims_path=self.claims,
+   approval_receipts_path=receipts,approval_key_path=key
+  )
+  self.assertEqual(bundle["human_approval_record"]["receipt_validation"]["validation"],"FAIL")
+  self.assertTrue(any("Approval receipt verification failed" in item for item in bundle["release_blockers"]))
 
  @patch('app.publishing.release_bundle.inspect_rendered_video',return_value={'validation':'PASS','duration_seconds':1.0,'width':1280,'height':720,'audio_stream_count':1,'subtitle_stream_count':1})
  def test_subtitle_timeline_beyond_render_duration_is_blocked(self,probe):

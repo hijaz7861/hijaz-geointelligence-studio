@@ -45,6 +45,12 @@ grep -q -- '--require-subtitles' "$TMP_DIR/render-validation-help.txt"
 grep -q -- '--max-items-per-feed' "$TMP_DIR/feed-help.txt"
 "$PYTHON" scripts/build_release_bundle.py --help > "$TMP_DIR/release-bundle-help.txt"
 grep -q -- '--subtitles' "$TMP_DIR/release-bundle-help.txt"
+grep -q -- '--approval-receipts' "$TMP_DIR/release-bundle-help.txt"
+grep -q -- '--approval-key-file' "$TMP_DIR/release-bundle-help.txt"
+"$PYTHON" scripts/init_approval_key.py --help > "$TMP_DIR/approval-key-help.txt"
+grep -q -- '--output' "$TMP_DIR/approval-key-help.txt"
+"$PYTHON" scripts/record_approval.py --help > "$TMP_DIR/record-approval-help.txt"
+grep -q -- '--stage' "$TMP_DIR/record-approval-help.txt"
 printf 'PASS: all CLI help screens\n'
 printf '\n[4/24] Source CLI add + duplicate rejection smoke test\n'
 "$PYTHON" scripts/add_source.py \
@@ -230,6 +236,27 @@ grep -q '"release_blocker_count"' "$TMP_DIR/release-bundle-result.json"
 grep -q '"Final rendered video is missing."' "$TMP_DIR/release-bundle.json"
 grep -q '"YouTube metadata draft is missing."' "$TMP_DIR/release-bundle.json"
 printf 'PASS: evidence bundle created and missing production evidence blocks release\n'
+
+
+printf '\n[18a/24] Synthetic HMAC approval-receipt CLI smoke test\n'
+"$PYTHON" scripts/init_approval_key.py --output "$TMP_DIR/approval.key" > "$TMP_DIR/approval-key-result.json"
+grep -q '"created": true' "$TMP_DIR/approval-key-result.json"
+printf 'Synthetic MP4 fixture; not a production render.\n' > "$TMP_DIR/approval-review.mp4"
+for stage in script_reviewed translation_reviewed media_rights_reviewed; do
+  "$PYTHON" scripts/record_approval.py --project data/projects/sample_project.json --receipts "$TMP_DIR/approval-receipts.json" --key-file "$TMP_DIR/approval.key" --stage "$stage" --decision approved --reviewer "CI synthetic fixture" --reason "Synthetic CI fixture only; no human review occurred." > /dev/null
+done
+"$PYTHON" scripts/record_approval.py --project data/projects/sample_project.json --receipts "$TMP_DIR/approval-receipts.json" --key-file "$TMP_DIR/approval.key" --stage final_video_reviewed --decision approved --reviewer "CI synthetic fixture" --reason "Synthetic CI fixture only; no human review occurred." --artifact "$TMP_DIR/approval-review.mp4" > /dev/null
+"$PYTHON" - "$TMP_DIR/approval-receipts.json" <<'PY'
+import json, sys
+from pathlib import Path
+document = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert document["schema_version"] == "1.0"
+assert len(document["receipts"]) == 4
+assert {item["payload"]["stage"] for item in document["receipts"]} == {
+    "script_reviewed", "translation_reviewed", "media_rights_reviewed", "final_video_reviewed"
+}
+print("PASS: four synthetic project-bound receipt records created; this is not human approval")
+PY
 
 printf '\n[19/24] Cinematic map generator CLI smoke test\n'
 "$PYTHON" scripts/render_cinematic_map.py --help > "$TMP_DIR/cinematic-map-help.txt"
