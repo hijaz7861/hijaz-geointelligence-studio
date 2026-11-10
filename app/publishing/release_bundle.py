@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 from app.editorial.script_validator import ProjectValidationError, release_blockers, validate_project_file
+from app.publishing.approval_receipts import ApprovalReceiptError, verify_approval_receipts
 from app.research.claim_ledger import DEFAULT_CLAIMS, ClaimLedgerError, load_claims
 from app.research.source_ledger import DEFAULT_LEDGER, SourceLedgerError, load_sources
 from app.video.render_validator import RenderValidationError, inspect_rendered_video
@@ -22,7 +23,7 @@ def _file_evidence(path: str | Path | None, label: str) -> dict[str, Any]:
     item=Path(path).expanduser().resolve()
     if not item.is_file(): return {"label":label,"provided":True,"exists":False,"path":str(item),"sha256":None,"size_bytes":None}
     return {"label":label,"provided":True,"exists":True,"path":str(item),"sha256":sha256_file(item),"size_bytes":item.stat().st_size}
-def build_release_bundle(project_path: str | Path, *, source_path: str | Path = DEFAULT_LEDGER, claims_path: str | Path | None = None, render_path: str | Path | None = None, subtitle_path: str | Path | None = None, metadata_path: str | Path | None = None, min_width: int = 1280, min_height: int = 720) -> dict[str, Any]:
+def build_release_bundle(project_path: str | Path, *, source_path: str | Path = DEFAULT_LEDGER, claims_path: str | Path | None = None, render_path: str | Path | None = None, subtitle_path: str | Path | None = None, metadata_path: str | Path | None = None, approval_receipts_path: str | Path | None = None, approval_key_path: str | Path | None = None, min_width: int = 1280, min_height: int = 720) -> dict[str, Any]:
     blockers: list[str]=[]
     try:
         project=validate_project_file(project_path,claims_path,source_path)
@@ -62,6 +63,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         _file_evidence(render_path,"rendered_video"),
         _file_evidence(subtitle_path,"subtitle_file"),
         _file_evidence(metadata_path,"youtube_metadata_draft"),
+        _file_evidence(approval_receipts_path,"approval_receipts"),
     ]
     render_report=None
     if render_path is None or not Path(render_path).expanduser().is_file():
@@ -108,6 +110,18 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     if not project.get("media_assets"): blockers.append("No media assets are listed in the project manifest.")
     approval=project.get("approval",{})
     human_approval={key:approval.get(key) for key in ("script_reviewed","translation_reviewed","media_rights_reviewed","final_video_reviewed","approved_by")}
+    approval_receipt_validation={"validation":"NOT_VERIFIED","note":"Supply both an approval receipts file and protected HMAC key file to verify project-bound review receipts."}
+    if approval_receipts_path is None or approval_key_path is None:
+        blockers.append("Tamper-evident human approval receipts are not verified; provide both --approval-receipts and --approval-key-file.")
+    else:
+        try:
+            approval_receipt_validation=verify_approval_receipts(
+                project_path, approval_receipts_path, approval_key_path, render_path=render_path
+            )
+        except (ApprovalReceiptError,OSError,ValueError) as exc:
+            approval_receipt_validation={"validation":"FAIL","error":str(exc)}
+            blockers.append(f"Approval receipt verification failed: {exc}")
+    human_approval["receipt_validation"]=approval_receipt_validation
     # Project JSON is editable metadata. Never treat booleans or a reviewer name
     # in that file as an authenticated human decision.
     approval_authentication={
@@ -115,6 +129,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
         "authenticated":False,
         "evidence_source":"project_metadata_only",
         "identity_assurance":"self_asserted",
+        "receipt_integrity_validation":approval_receipt_validation["validation"],
         "note":"Project approval flags and approved_by are recorded for context only; they are not signed receipts or independently authenticated reviewer identity.",
         "required_controls":[
             "Verify project-bound approval receipts against a protected signing key.",
@@ -135,7 +150,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
       "human_approval_record":human_approval,
       "human_approval_authentication":approval_authentication,
       "counts":{"source_records":len(sources),"claim_records":len(claims),"linked_claims":len(claim_evidence),"media_assets":len(media_evidence)},
-      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","Human approval is recorded from project metadata and is not authenticated by this tool.","This bundle does not publish, upload, or authorize public release."]
+      "limitations":["Hashes show which files were inspected, not that their contents are true.","Rights fields and supplied evidence are not legal verification.","Render checks do not assess narration quality, caption accuracy, or synchronization.","HMAC receipts verify record integrity and shared-key possession only; reviewer identity remains self-asserted and is not independently authenticated.","This bundle does not publish, upload, or authorize public release."]
     }
 def write_release_bundle(bundle: dict[str, Any], output_path: str | Path, *, overwrite: bool = False) -> Path:
     output=Path(output_path).expanduser().resolve()
