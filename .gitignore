@@ -18,3 +18,8 @@ artifacts/*
 token.json
 credentials.json
 client_secret*.json
+
+# Local editorial approval secrets (never commit)
+.secrets/
+*.approval-key
+approval.key
