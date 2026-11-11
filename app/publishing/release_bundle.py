@@ -69,7 +69,7 @@ def build_release_bundle(project_path: str | Path, *, source_path: str | Path = 
     if render_path is None or not Path(render_path).expanduser().is_file():
         blockers.append("Final rendered video is missing.")
     else:
-        try: render_report=inspect_rendered_video(render_path,require_audio=True,require_subtitles=True,min_width=min_width,min_height=min_height)
+        try: render_report=inspect_rendered_video(render_path,require_audio=True,require_subtitles=True,require_mp4=True,min_width=min_width,min_height=min_height)
         except (RenderValidationError,OSError) as exc: blockers.append(f"Rendered video technical validation failed: {exc}")
     subtitle_report=None
     if subtitle_path is None or not Path(subtitle_path).expanduser().is_file():

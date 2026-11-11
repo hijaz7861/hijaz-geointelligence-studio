@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from app.publishing.release_bundle import ReleaseBundleError, build_release_bundle, sha256_file, write_release_bundle
+from app.video.render_validator import RenderValidationError
 from app.research.source_ledger import add_source
 from app.research.claim_ledger import add_claim
 from app.publishing.approval_receipts import APPROVAL_STAGES, create_approval_key, record_approval
@@ -29,8 +30,14 @@ class ReleaseBundleTests(unittest.TestCase):
   project_entry=next(item for item in bundle['input_files'] if item['label']=='project')
   self.assertEqual(project_entry['sha256'],sha256_file(self.project))
   self.assertTrue(any('never grants permission' in item for item in bundle['release_blockers']))
-  probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,min_width=1280,min_height=720)
+  probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,require_mp4=True,min_width=1280,min_height=720)
   self.assertTrue(bundle['subtitle_validation']['timeline_within_render'])
+ @patch('app.publishing.release_bundle.inspect_rendered_video',side_effect=RenderValidationError("Rendered container is not MP4"))
+ def test_release_bundle_blocks_non_mp4_container(self,probe):
+  bundle=build_release_bundle(self.project,source_path=self.sources,claims_path=self.claims,render_path=self.video,subtitle_path=self.srt,metadata_path=self.metadata)
+  self.assertTrue(any("Rendered video technical validation failed: Rendered container is not MP4" in item for item in bundle["release_blockers"]))
+  probe.assert_called_once_with(self.video,require_audio=True,require_subtitles=True,require_mp4=True,min_width=1280,min_height=720)
+
  def test_all_true_project_approval_flags_are_not_authenticated(self):
   project={**PROJECT,"approval":{"script_reviewed":True,"translation_reviewed":True,"media_rights_reviewed":True,"final_video_reviewed":True,"approved_by":"Claimed reviewer"}}
   self.project.write_text(json.dumps(project),encoding='utf-8')
