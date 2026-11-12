@@ -131,7 +131,7 @@ def analyze_readability(
             "_raw_cps": cps,
         })
 
-    peak = max(metrics, key=lambda item: item["characters_per_second"])
+    peak = max(metrics, key=lambda item: item["_raw_cps"])
     over_limit = [
         item["cue"]
         for item in metrics
