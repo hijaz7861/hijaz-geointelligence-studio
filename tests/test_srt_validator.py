@@ -88,6 +88,10 @@ class SrtValidatorTests(unittest.TestCase):
         self.assertFalse(report["within_limit"])
         self.assertEqual(report["over_limit_cues"], [2])
 
+    def test_readability_threshold_uses_unrounded_cps(self):
+        report = analyze_readability(parse_srt(VALID), max_chars_per_second=17.779)
+        self.assertTrue(report["within_limit"])
+
     def test_readability_ignores_nonspacing_marks_and_format_controls(self):
         cues = parse_srt("1\n00:00:00,000 --> 00:00:01,000\nمَیں\u200c ہوں\n")
         report = analyze_readability(cues)
