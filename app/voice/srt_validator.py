@@ -128,19 +128,20 @@ def analyze_readability(
             "visible_characters": characters,
             "duration_ms": duration_ms,
             "characters_per_second": round(cps, 2),
+            "_raw_cps": cps,
         })
 
     peak = max(metrics, key=lambda item: item["characters_per_second"])
     over_limit = [
         item["cue"]
         for item in metrics
-        if limit is not None and item["characters_per_second"] > limit
+        if limit is not None and item["_raw_cps"] > limit
     ]
     return {
         "method": "Approximate Unicode visible-character count; spaces and punctuation count, nonspacing marks and format controls are excluded.",
         "cue_count": len(metrics),
         "mean_cue_cps": round(
-            sum(item["characters_per_second"] for item in metrics) / len(metrics), 2
+            sum(item["_raw_cps"] for item in metrics) / len(metrics), 2
         ),
         "peak_cps": peak["characters_per_second"],
         "peak_cue": peak["cue"],
