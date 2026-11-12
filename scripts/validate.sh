@@ -20,6 +20,7 @@ grep -q -- '--source-url' "$TMP_DIR/claim-help.txt"
 grep -q -- '--project' "$TMP_DIR/project-help.txt"
 "$PYTHON" scripts/validate_srt.py --help > "$TMP_DIR/srt-help.txt"
 grep -q -- '--max-chars-per-line' "$TMP_DIR/srt-help.txt"
+grep -q -- '--max-cps' "$TMP_DIR/srt-help.txt"
 "$PYTHON" scripts/render_video.py --help > "$TMP_DIR/render-help.txt"
 grep -q -- '--subtitles' "$TMP_DIR/render-help.txt"
 "$PYTHON" scripts/render_cinematic_map.py --help > "$TMP_DIR/cinematic-map-help.txt"
@@ -95,7 +96,14 @@ SRT
 "$PYTHON" scripts/validate_srt.py "$TMP_DIR/captions.srt" > "$TMP_DIR/subtitles.json"
 grep -q '"validation": "PASS"' "$TMP_DIR/subtitles.json"
 grep -q '"cue_count": 2' "$TMP_DIR/subtitles.json"
-printf 'PASS: SRT validation CLI\n'
+"$PYTHON" scripts/validate_srt.py "$TMP_DIR/captions.srt" --max-cps 20 > "$TMP_DIR/subtitles-readable.json"
+grep -q '"within_limit": true' "$TMP_DIR/subtitles-readable.json"
+if "$PYTHON" scripts/validate_srt.py "$TMP_DIR/captions.srt" --max-cps 1 > "$TMP_DIR/subtitles-too-fast.json"; then
+  printf 'FAIL: over-dense subtitle cues passed the strict CPS gate\n' >&2
+  exit 1
+fi
+grep -q '"validation": "FAIL"' "$TMP_DIR/subtitles-too-fast.json"
+printf 'PASS: SRT structure, CPS report, and strict reading-speed gate\n'
 
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   printf '\n[8/24] Optional FFmpeg end-to-end smoke render\n'
