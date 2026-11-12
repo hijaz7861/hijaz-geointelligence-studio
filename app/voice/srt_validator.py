@@ -107,14 +107,14 @@ def analyze_readability(
         raise SubtitleValidationError("Cannot analyze readability without subtitle cues.")
     limit = None
     if max_chars_per_second is not None:
-        if (
-            isinstance(max_chars_per_second, bool)
-            or not isinstance(max_chars_per_second, (int, float))
-            or not math.isfinite(float(max_chars_per_second))
-            or float(max_chars_per_second) <= 0
-        ):
+        if isinstance(max_chars_per_second, bool) or not isinstance(max_chars_per_second, (int, float)):
             raise SubtitleValidationError("max_chars_per_second must be a finite positive number.")
-        limit = float(max_chars_per_second)
+        try:
+            limit = float(max_chars_per_second)
+        except (OverflowError, ValueError) as exc:
+            raise SubtitleValidationError("max_chars_per_second must be a finite positive number.") from exc
+        if not math.isfinite(limit) or limit <= 0:
+            raise SubtitleValidationError("max_chars_per_second must be a finite positive number.")
 
     metrics = []
     for cue in cues:
