@@ -39,6 +39,27 @@ def _reject_json_constant(value: str):
     raise SourceSnapshotError(f"Non-standard JSON constant is not allowed: {value}")
 
 
+def _read_manifest_bytes(path: Path) -> bytes:
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise SourceSnapshotError(f"Cannot safely open snapshot manifest: {exc}") from exc
+    try:
+        with os.fdopen(descriptor, "rb") as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode):
+                raise SourceSnapshotError("Snapshot manifest must be a regular file.")
+            if info.st_size > MAX_MANIFEST_BYTES:
+                raise SourceSnapshotError(f"Snapshot manifest exceeds the {MAX_MANIFEST_BYTES}-byte size limit.")
+            raw = stream.read(MAX_MANIFEST_BYTES + 1)
+            if len(raw) > MAX_MANIFEST_BYTES:
+                raise SourceSnapshotError(f"Snapshot manifest exceeds the {MAX_MANIFEST_BYTES}-byte size limit.")
+            return raw
+    except OSError as exc:
+        raise SourceSnapshotError(f"Cannot read snapshot manifest: {exc}") from exc
+
+
 def _parse_capture_time(value: object) -> str:
     if not isinstance(value, str) or not value.strip():
         raise SourceSnapshotError("captured_at must be an ISO-8601 timestamp with a timezone.")
@@ -146,10 +167,8 @@ def verify_source_snapshots(
         raise SourceSnapshotError(f"Cannot inspect snapshot manifest: {exc}") from exc
     if stat.S_ISLNK(manifest_info.st_mode) or not stat.S_ISREG(manifest_info.st_mode):
         raise SourceSnapshotError("Snapshot manifest must be a regular, non-symlink file.")
-    if manifest_info.st_size > MAX_MANIFEST_BYTES:
-        raise SourceSnapshotError(f"Snapshot manifest exceeds the {MAX_MANIFEST_BYTES}-byte size limit.")
+    raw = _read_manifest_bytes(path)
     try:
-        raw = path.read_bytes()
         manifest = json.loads(
             raw.decode("utf-8"),
             object_pairs_hook=_unique_object,
@@ -157,7 +176,7 @@ def verify_source_snapshots(
         )
     except SourceSnapshotError:
         raise
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (UnicodeError, json.JSONDecodeError) as exc:
         raise SourceSnapshotError(f"Cannot read UTF-8 JSON snapshot manifest: {exc}") from exc
     if not isinstance(manifest, list):
         raise SourceSnapshotError("Snapshot manifest must contain a JSON array.")
