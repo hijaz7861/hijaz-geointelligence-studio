@@ -77,10 +77,10 @@ class SourceSnapshotTests(unittest.TestCase):
     def write_manifest(self, entries):
         self.manifest.write_text(json.dumps(entries), encoding="utf-8")
 
-    def verify(self, *, max_snapshot_bytes=25 * 1024 * 1024):
+    def verify(self, *, max_snapshot_bytes=25 * 1024 * 1024, known_urls=None):
         return verify_source_snapshots(
             self.manifest,
-            [SOURCE["url"]],
+            [SOURCE["url"]] if known_urls is None else known_urls,
             max_snapshot_bytes=max_snapshot_bytes,
         )
 
@@ -110,10 +110,11 @@ class SourceSnapshotTests(unittest.TestCase):
             self.verify()
 
     def test_rejects_duplicate_snapshot_paths(self):
-        second = {**self.entry, "url": SOURCE["url"] + "?copy=1"}
+        second_url = "https://example.org/second-report"
+        second = {**self.entry, "url": second_url}
         self.write_manifest([self.entry, second])
-        with self.assertRaisesRegex(SourceSnapshotError, "absent from the source ledger"):
-            self.verify()
+        with self.assertRaisesRegex(SourceSnapshotError, "Duplicate snapshot_path"):
+            self.verify(known_urls=[SOURCE["url"], second_url])
 
     def test_rejects_parent_traversal(self):
         self.write_manifest([{**self.entry, "snapshot_path": "../report.html"}])
@@ -122,7 +123,7 @@ class SourceSnapshotTests(unittest.TestCase):
 
     def test_rejects_absolute_snapshot_path(self):
         self.write_manifest([{**self.entry, "snapshot_path": str(self.snapshot)}])
-        with self.assertRaisesRegex(SourceSnapshotError, "relative POSIX"):
+        with self.assertRaisesRegex(SourceSnapshotError, "relative to the manifest directory"):
             self.verify()
 
     def test_rejects_symlink_snapshot(self):
@@ -160,7 +161,7 @@ class SourceSnapshotTests(unittest.TestCase):
             self.verify()
 
     def test_rejects_nonstandard_json_constant(self):
-        self.manifest.write_text('[NaN]', encoding="utf-8")
+        self.manifest.write_text("[NaN]", encoding="utf-8")
         with self.assertRaisesRegex(SourceSnapshotError, "Non-standard JSON constant"):
             self.verify()
 
@@ -247,15 +248,15 @@ class ReleaseBundleSnapshotTests(unittest.TestCase):
         probe.assert_called_once()
 
     def test_invalid_snapshot_manifest_adds_release_blocker(self):
-        self.manifest.write_text("[]", encoding="utf-8")
+        self.manifest.write_text("[NaN]", encoding="utf-8")
         bundle = build_release_bundle(
             self.project,
             source_path=self.sources,
             claims_path=self.claims,
             snapshot_manifest_path=self.manifest,
         )
-        self.assertEqual(bundle["source_snapshot_validation"]["validation"], "PASS")
-        self.assertEqual(bundle["source_snapshot_validation"]["entry_count"], 0)
+        self.assertEqual(bundle["source_snapshot_validation"]["validation"], "FAIL")
+        self.assertTrue(any("snapshot manifest validation failed" in item.lower() for item in bundle["release_blockers"]))
 
 
 if __name__ == "__main__":
