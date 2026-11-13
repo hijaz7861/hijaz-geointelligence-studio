@@ -75,12 +75,12 @@ def _safe_relative_path(root: Path, value: object) -> tuple[Path, str]:
         raise SourceSnapshotError("snapshot_path must be a non-empty relative POSIX path.")
     if "\\" in value or "\x00" in value:
         raise SourceSnapshotError("snapshot_path must use relative POSIX separators only.")
-    parts = value.split("/")
-    if any(part in {"", ".", ".."} for part in parts):
-        raise SourceSnapshotError("snapshot_path must not contain empty, dot, or parent-traversal segments.")
     relative = PurePosixPath(value)
     if relative.is_absolute():
         raise SourceSnapshotError("snapshot_path must be relative to the manifest directory.")
+    parts = value.split("/")
+    if any(part in {"", ".", ".."} for part in parts):
+        raise SourceSnapshotError("snapshot_path must not contain empty, dot, or parent-traversal segments.")
 
     candidate = root
     for index, part in enumerate(parts):
