@@ -136,6 +136,17 @@ class SourceSnapshotTests(unittest.TestCase):
         with self.assertRaisesRegex(SourceSnapshotError, "Symlinks are not allowed"):
             self.verify()
 
+    def test_rejects_symlink_manifest(self):
+        target = self.root / "manifest-target.json"
+        target.write_text(json.dumps([self.entry]), encoding="utf-8")
+        self.manifest.unlink()
+        try:
+            self.manifest.symlink_to(target)
+        except (OSError, NotImplementedError):
+            self.skipTest("Symlinks are unavailable on this runner.")
+        with self.assertRaisesRegex(SourceSnapshotError, "non-symlink"):
+            self.verify()
+
     def test_rejects_timezone_naive_capture_time(self):
         self.write_manifest([{**self.entry, "captured_at": "2026-11-13T02:00:00"}])
         with self.assertRaisesRegex(SourceSnapshotError, "explicit timezone"):
@@ -178,6 +189,23 @@ class SourceSnapshotTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--manifest", result.stdout)
         self.assertIn("--sources-file", result.stdout)
+
+    def test_cli_verifies_manifest_with_explicit_source_ledger(self):
+        sources_file = self.root / "sources.json"
+        add_source(SOURCE, sources_file)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "verify_source_snapshots.py"),
+                "--manifest", str(self.manifest),
+                "--sources-file", str(sources_file),
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('"validation": "PASS"', result.stdout)
+        self.assertIn('"verified_count": 1', result.stdout)
 
 
 class ReleaseBundleSnapshotTests(unittest.TestCase):
@@ -257,6 +285,16 @@ class ReleaseBundleSnapshotTests(unittest.TestCase):
         )
         self.assertEqual(bundle["source_snapshot_validation"]["validation"], "FAIL")
         self.assertTrue(any("snapshot manifest validation failed" in item.lower() for item in bundle["release_blockers"]))
+
+    def test_missing_snapshot_manifest_is_explicitly_not_provided(self):
+        bundle = build_release_bundle(
+            self.project,
+            source_path=self.sources,
+            claims_path=self.claims,
+        )
+        self.assertEqual(bundle["source_snapshot_validation"]["validation"], "NOT_PROVIDED")
+        evidence = bundle["claim_evidence"][0]["sources"][0]["snapshot_evidence"]
+        self.assertEqual(evidence["integrity"], "NOT_PROVIDED")
 
 
 if __name__ == "__main__":
