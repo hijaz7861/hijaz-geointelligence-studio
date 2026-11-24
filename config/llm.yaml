@@ -1,0 +1,67 @@
+# LLM Provider Configuration
+# Free models via OpenRouter (set OPENROUTER_API_KEY env var)
+# Or use Ollama locally (no API key needed)
+
+preferred_provider: openrouter
+fallback_enabled: true
+max_retries: 3
+timeout: 30
+
+# Model priority (tried in order)
+model_priority:
+  - meta-llama/llama-3.1-8b-instruct:free
+  - mistralai/mistral-7b-instruct:free
+  - google/gemma-2-9b-it:free
+  - qwen/qwen-2-1.5b-instruct:free
+
+# Per-agent LLM settings
+agent_llm:
+  research-agent:
+    use_llm: true
+    task_type: analysis
+    temperature: 0.3
+    max_tokens: 1024
+  producer-agent:
+    use_llm: true
+    task_type: analysis
+    temperature: 0.5
+    max_tokens: 512
+  script-agent:
+    use_llm: true
+    task_type: script
+    temperature: 0.7
+    max_tokens: 4096
+  translation-agent:
+    use_llm: true
+    task_type: translation
+    temperature: 0.3
+    max_tokens: 4096
+  fact-check-agent:
+    use_llm: true
+    task_type: analysis
+    temperature: 0.2
+    max_tokens: 1024
+  compliance-agent:
+    use_llm: true
+    task_type: analysis
+    temperature: 0.2
+    max_tokens: 512
+  metadata-agent:
+    use_llm: true
+    task_type: general
+    temperature: 0.5
+    max_tokens: 512
+
+# Free LLM discovery
+free_llm_finder:
+  enabled: true
+  providers:
+    - openrouter
+    - ollama
+    - groq
+    - together
+    - huggingface
+  auto_discover: true
+  refresh_interval_hours: 24
+```<|end|><|start|>start<|channel|>analysis <|constrain|>xml<|message|><rfl:parameter name="path">
+/workspace/app/llm/free_finder.py

@@ -1,0 +1,35 @@
+{
+  "channel_id": "islamic-history-ur",
+  "channel_name": "Islamic History Urdu",
+  "purpose": "Narrative documentaries on Islamic history in Urdu",
+  "target_country": "Pakistan",
+  "target_audience": "Urdu speakers interested in Islamic history, Urdu literature",
+  "topic_focus": "Islamic history, Urdu adab, ghazal, historical figures",
+  "language": "ur",
+  "secondary_language": "en",
+  "upload_day": "Friday",
+  "upload_time": "15:00",
+  "timezone": "Asia/Dubai",
+  "review_required": true,
+  "policy_version": "2026-11-24",
+  "is_monetized": false,
+  "search_context": {
+    "last_search_date": "",
+    "last_search_query": "",
+    "feeds_configured": [
+      "History books",
+      "Urdu poetry archives",
+      "Islamic history sources"
+    ],
+    "keywords": [
+      "Islamic history",
+      "Urdu adab",
+      "ghazal",
+      "historical figure"
+    ]
+  },
+  "render_template": "calligraphy",
+  "tags": [
+    "render_heavy"
+  ]
+}

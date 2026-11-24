@@ -1,0 +1,35 @@
+# Resource Pool Configuration
+
+gpu_slots: 4
+cpu_threads: 8
+tts_minutes_monthly: 500
+api_calls_daily: 1000
+
+# Per-channel resource allocation
+channel_allocations:
+  geo-daily-ur:
+    gpu_needed: 2
+    tts_needed: 100
+    render_heavy: true
+    priority: high
+  tech-tutorials-hi:
+    gpu_needed: 1
+    tts_needed: 150
+    render_heavy: false
+    priority: medium
+  islamic-history-ur:
+    gpu_needed: 1
+    tts_needed: 50
+    render_heavy: true
+    priority: medium
+
+# Cost controls
+cost_controls:
+  max_cost_per_minute_video: 0.50
+  monthly_budget_usd: 100.0
+  alert_threshold_percent: 80
+  prefer_free_tts: true
+  prefer_cpu_render_for_drafts: true
+  gpu_spot_instances: true
+```<|end|><|start|>start<|channel|>analysis <|constrain|>xml<|message|><rfl:parameter name="path">
+/workspace/app/config/agents.yaml

@@ -1,0 +1,40 @@
+{
+  "channel_id": "geo-daily-ur",
+  "channel_name": "Geo Daily Urdu",
+  "purpose": "Daily geopolitical analysis with maps, Urdu narration, source-backed claims",
+  "target_country": "Pakistan",
+  "target_audience": "Urdu speakers interested in defense, borders, international relations",
+  "topic_focus": "Indo-Pak border, Kashmir, UN statements, satellite imagery",
+  "language": "ur",
+  "secondary_language": "en",
+  "upload_day": "Monday",
+  "upload_time": "18:00",
+  "timezone": "Asia/Karachi",
+  "review_required": true,
+  "policy_version": "2026-11-24",
+  "is_monetized": true,
+  "search_context": {
+    "last_search_date": "",
+    "last_search_query": "",
+    "feeds_configured": [
+      "ISPR",
+      "PIB",
+      "MEA",
+      "UNMOGIP",
+      "GDELT",
+      "NASA FIRMS"
+    ],
+    "keywords": [
+      "LoC",
+      "ceasefire",
+      "Kashmir",
+      "satellite",
+      "artillery",
+      "troop movement"
+    ]
+  },
+  "render_template": "map_heavy",
+  "tags": [
+    "render_heavy"
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "claim_evidence": [
+    {
+      "claim": "Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims.",
+      "notes": "Source linkage is metadata evidence, not independent factual verification.",
+      "sources": [
+        {
+          "in_source_ledger": true,
+          "published_at": "2009-09-21",
+          "source_type": "official_statement",
+          "title": "Natural Earth — Admin 0 Countries",
+          "url": "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/"
+        }
+      ],
+      "status": "official_claim"
+    }
+  ],
+  "counts": {
+    "claim_records": 1,
+    "linked_claims": 1,
+    "media_assets": 1,
+    "source_records": 1
+  },
+  "created_utc_note": "Timestamp intentionally omitted to keep the evidence report reproducible for identical inputs.",
+  "human_approval_record": {
+    "approved_by": "",
+    "final_video_reviewed": false,
+    "media_rights_reviewed": false,
+    "script_reviewed": false,
+    "translation_reviewed": false
+  },
+  "input_files": [
+    {
+      "exists": true,
+      "label": "project",
+      "path": "/workspace/app/data/projects/world-map-literacy/project.json",
+      "provided": true,
+      "sha256": "4100fb0c4a34eeeb0a9b36917a59d32e116a8e628f72cb3a9d68897943d86f97",
+      "size_bytes": 2395
+    },
+    {
+      "exists": true,
+      "label": "source_ledger",
+      "path": "/workspace/app/data/projects/world-map-literacy/sources.json",
+      "provided": true,
+      "sha256": "b4a2b337ea09119246ec4babb808cc0998bb3eb56bfa4e6654534d4b2635df65",
+      "size_bytes": 549
+    },
+    {
+      "exists": true,
+      "label": "claim_ledger",
+      "path": "/workspace/app/data/projects/world-map-literacy/claims.json",
+      "provided": true,
+      "sha256": "1dcf543c135ee22381ee43421edabae98d2e9cb74263cfffbf50a63f68b7d441",
+      "size_bytes": 483
+    },
+    {
+      "exists": true,
+      "label": "rendered_video",
+      "path": "/tmp/tmp.VMbpipGCcJ/world-map-documentary.mp4",
+      "provided": true,
+      "sha256": "74b2bb1e1f859c8c2d42b809d0e4c090046cf368e5c3b3d36850691dfee9aea5",
+      "size_bytes": 459831
+    },
+    {
+      "exists": true,
+      "label": "subtitle_file",
+      "path": "/workspace/app/data/projects/world-map-literacy/subtitles.en-ur.srt",
+      "provided": true,
+      "sha256": "c7c9e0445ac1d4a9bb4acc403fb13b9088425a2b95c78f5b48a1381f37004dfb",
+      "size_bytes": 1063
+    },
+    {
+      "exists": true,
+      "label": "youtube_metadata_draft",
+      "path": "/tmp/tmp.VMbpipGCcJ/world-map-metadata.json",
+      "provided": true,
+      "sha256": "be0a1a5df8e122cb0149bc8618800482c08f3e9a25965bd12742fb9dd1d8a9a3",
+      "size_bytes": 1960
+    }
+  ],
+  "language": "en",
+  "limitations": [
+    "Hashes show which files were inspected, not that their contents are true.",
+    "Rights fields and supplied evidence are not legal verification.",
+    "Render checks do not assess narration quality, caption accuracy, or synchronization.",
+    "Human approval is recorded from project metadata and is not authenticated by this tool.",
+    "This bundle does not publish, upload, or authorize public release."
+  ],
+  "media_rights_evidence": [
+    {
+      "asset_id": "natural-earth-admin0-map",
+      "attribution": "Made with Natural Earth; GeoJSON conversion by Martyn Afford.",
+      "creator": "Natural Earth contributors; GeoJSON conversion by Martyn Afford",
+      "notes": "The layer represents de facto boundaries by default and is generalized; it is not a legal determination, navigation data, or proof of the accuracy of any individual boundary.",
+      "origin_url": "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/",
+      "rights_evidence": "Natural Earth's official Terms of Use state that its website's raster and vector map data are public domain and may be used for educational and commercial purposes: https://www.naturalearthdata.com/about/terms-of-use/. The pinned GeoJSON conversion repository states its conversion is CC0. Confirm current terms before redistribution.",
+      "rights_status": "public_domain_verified",
+      "usage_scope": "Educational world-map documentary preview; generalized 1:110m country-boundary layer."
+    }
+  ],
+  "project_id": "world-map-literacy-en-ur-sample",
+  "publish_ready": false,
+  "release_blockers": [
+    "Human approval missing: script_reviewed",
+    "Human approval missing: translation_reviewed",
+    "Human approval missing: media_rights_reviewed",
+    "Human approval missing: final_video_reviewed",
+    "Human approval missing: approved_by",
+    "Metadata draft still reports release blockers.",
+    "This evidence bundle is a review artifact only; it never grants permission to publish or upload."
+  ],
+  "release_status": "draft_blocked",
+  "render_validation": {
+    "audio_stream_count": 1,
+    "duration_seconds": 35.0,
+    "file": "/tmp/tmp.VMbpipGCcJ/world-map-documentary.mp4",
+    "height": 720,
+    "note": "Technical stream validation only; editorial, factual, licensing, and audio-quality review remain required.",
+    "subtitle_stream_count": 1,
+    "validation": "PASS",
+    "video_codec": "h264",
+    "width": 1280
+  },
+  "schema_version": "1.0",
+  "structural_validation": "PASS",
+  "subtitle_validation": {
+    "cue_count": 5,
+    "duration_ms": 35000,
+    "note": "Structure/timing only; linguistic accuracy and audio synchronization need human review.",
+    "render_duration_ms": 35000,
+    "timeline_within_render": true,
+    "validation": "PASS"
+  },
+  "title": "Why world maps show borders differently"
+}

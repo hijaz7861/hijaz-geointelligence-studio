@@ -1,0 +1,26 @@
+{
+  "title": "Why world maps show borders differently",
+  "description": "Why world maps show borders differently\n\nEducational documentary draft. This metadata package was generated from the project's research ledger and has not been published.\n\nKey statements covered:\n- Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims. (evidence label: official_claim)\n\nSources and further reading:\n- https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/\n\nCorroboration review notes:\n- Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims.: No independent-reporting source is linked; check whether independent corroboration is available.\n\nEditorial note: verify every statement, resolve uncertainty, confirm media rights, and obtain human approval before publication.",
+  "language": "en",
+  "target_duration_seconds": 35,
+  "source_urls": [
+    "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/"
+  ],
+  "release_status": "draft_blocked",
+  "publish_ready": false,
+  "release_blockers": [
+    "Human approval missing: script_reviewed",
+    "Human approval missing: translation_reviewed",
+    "Human approval missing: media_rights_reviewed",
+    "Human approval missing: final_video_reviewed",
+    "Human approval missing: approved_by"
+  ],
+  "corroboration_warnings": [
+    {
+      "claim": "Natural Earth says its Admin 0 countries layer shows de facto boundaries by default, reflecting who controls territory rather than de jure claims.",
+      "code": "no_independent_reporting",
+      "message": "No independent-reporting source is linked; check whether independent corroboration is available."
+    }
+  ],
+  "note": "This tool creates metadata only; it never uploads or publishes content."
+}
