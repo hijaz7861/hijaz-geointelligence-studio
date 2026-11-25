@@ -57,7 +57,7 @@
     {
       "exists": true,
       "label": "rendered_video",
-      "path": "/tmp/tmp.VMbpipGCcJ/world-map-documentary.mp4",
+      "path": "/tmp/tmp.8hqune5XQT/world-map-documentary.mp4",
       "provided": true,
       "sha256": "74b2bb1e1f859c8c2d42b809d0e4c090046cf368e5c3b3d36850691dfee9aea5",
       "size_bytes": 459831
@@ -73,7 +73,7 @@
     {
       "exists": true,
       "label": "youtube_metadata_draft",
-      "path": "/tmp/tmp.VMbpipGCcJ/world-map-metadata.json",
+      "path": "/tmp/tmp.8hqune5XQT/world-map-metadata.json",
       "provided": true,
       "sha256": "be0a1a5df8e122cb0149bc8618800482c08f3e9a25965bd12742fb9dd1d8a9a3",
       "size_bytes": 1960
@@ -114,7 +114,7 @@
   "render_validation": {
     "audio_stream_count": 1,
     "duration_seconds": 35.0,
-    "file": "/tmp/tmp.VMbpipGCcJ/world-map-documentary.mp4",
+    "file": "/tmp/tmp.8hqune5XQT/world-map-documentary.mp4",
     "height": 720,
     "note": "Technical stream validation only; editorial, factual, licensing, and audio-quality review remain required.",
     "subtitle_stream_count": 1,
